@@ -1,0 +1,14 @@
+{
+  "name": "Akvaryum",
+  "short_name": "Akvaryum",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#062f55",
+  "theme_color": "#062f55",
+  "icons": [
+    { "src": "img/simge-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/simge-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

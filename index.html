@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Akvaryum">
+<meta name="theme-color" content="#062f55">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/simge-180.png">
+<link rel="icon" type="image/png" href="img/simge-192.png">
+<title>Akvaryum</title>
+<style>
+  html, body {
+    margin: 0; height: 100%; background: #062f55; overflow: hidden;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  canvas { display: block; position: fixed; inset: 0; touch-action: none; }
+  .ipucu {
+    position: fixed; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+    color: #e8fbff; font-weight: 600; font-size: clamp(15px, 1.6vmin, 30px); white-space: nowrap;
+    background: rgba(0, 30, 50, .5); padding: .6em 1.1em; border-radius: 2em;
+    pointer-events: none; transition: opacity 1.5s;
+  }
+  #yukleniyor { bottom: 50%; }
+  #arac {
+    position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
+    display: flex; gap: clamp(6px, 1vmin, 16px); transition: opacity .8s;
+  }
+  #arac.gizli { opacity: 0; pointer-events: none; }
+  #arac button {
+    width: clamp(40px, 5vmin, 80px); height: clamp(40px, 5vmin, 80px); border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.35); background: rgba(0, 30, 50, .4); color: #fff;
+    font-size: clamp(18px, 2.4vmin, 38px); line-height: 1; padding: 0; cursor: pointer;
+    display: grid; place-items: center;
+  }
+  #arac button:focus-visible { outline: 3px solid #ffd54a; outline-offset: 2px; }
+  #arac button svg { width: 55%; height: 55%; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; }
+  #rehber {
+    position: fixed; inset: 0; display: none; background: rgba(2, 20, 35, .95); color: #e8f4f8;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: max(18px, env(safe-area-inset-top)) clamp(14px, 3vw, 60px) 50px;
+    font-size: clamp(15px, 1.5vmin, 26px);
+  }
+  #rehber.acik { display: block; }
+  #rehber h2 { margin: .3em 0 .1em; font-size: 1.5em; }
+  #rehber h3 { margin: 1.6em 0 .4em; }
+  #rehber .alt { color: #a9c7d2; margin: 0 0 1em; max-width: 60em; }
+  #sayac { color: #ffd54a; font-weight: 700; }
+  .kartlar { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(130px, 13vw, 260px), 1fr)); gap: .8em; }
+  .kart {
+    background: rgba(255,255,255,.07); border-radius: 1em; padding: .6em; text-align: center;
+    cursor: pointer; border: 2px solid transparent; color: inherit; font: inherit;
+  }
+  .kart:focus-visible, .kart:hover { border-color: #ffd54a; }
+  .kart img { width: 100%; aspect-ratio: 2 / 1; object-fit: contain; display: block; }
+  .kart.gizli img { filter: brightness(0); opacity: .35; }
+  .kart span { display: block; margin-top: .4em; font-weight: 600; font-size: .9em; }
+  .kart i { display: block; font-size: .72em; color: #9fc0cc; margin-top: .15em; }
+  .ayarlar { display: flex; gap: .8em; flex-wrap: wrap; }
+  .anahtar {
+    font: 600 1em system-ui, sans-serif; color: #e8f4f8; background: rgba(255,255,255,.08);
+    border: 2px solid rgba(255,255,255,.2); border-radius: 2em; padding: .5em 1.1em; cursor: pointer;
+  }
+  .anahtar.acik { background: #2a8f6a; border-color: #5fd3a8; }
+  .anahtar:focus-visible { outline: 3px solid #ffd54a; }
+  #kapat {
+    position: fixed; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right));
+    font: 600 1em system-ui, sans-serif; background: #e8f4f8; color: #062f55; border: 0;
+    border-radius: 2em; padding: .5em 1.1em; cursor: pointer;
+  }
+  #kaynakListe { padding-left: 1.2em; max-width: 60em; font-size: .85em; color: #b9d3dd; }
+  #kaynakListe li { margin: .35em 0; }
+  #kaynakListe a { color: #7fd8ff; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="ipucu" id="yukleniyor">Akvaryum hazırlanıyor…</div>
+<div class="ipucu" id="ipucu" style="opacity:0">Yem atmak için dokun, balıklara dokunup tanı</div>
+
+<div id="arac">
+  <button id="rehberDugme" title="Balık rehberi (R)" aria-label="Balık rehberi">📖</button>
+  <button id="geceDugme" title="Gece / gündüz (N)" aria-label="Gece modu">🌙</button>
+  <button id="sesDugme" title="Ses (M)" aria-label="Ses">🔊</button>
+  <button id="tamEkranDugme" title="Tam ekran (F)" aria-label="Tam ekran">
+    <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+  </button>
+</div>
+
+<div id="rehber" role="dialog" aria-label="Balık rehberi">
+  <button id="kapat">Kapat</button>
+  <h2>Balık Rehberi</h2>
+  <p class="alt">Keşfettiğin balıklar: <span id="sayac">0</span>.
+     Akvaryumdaki balıklara dokunarak yenilerini keşfet. Keşfettiğin bir balığın kartına dokunursan o balığı akvaryuma çağırırsın.</p>
+  <div class="kartlar" id="kartlar"></div>
+  <h3>Ayarlar</h3>
+  <div class="ayarlar">
+    <button class="anahtar" id="muzikAyar"></button>
+    <button class="anahtar" id="kanAyar"></button>
+  </div>
+  <p class="alt">Gerçekçi av: avcı balıklar ağızlarına sığan küçük balıkları yakalar; suda bir kan bulutu dağılır,
+     kalan parçaları başka balıklar yer. Kapatınca av yine olur ama kan ve parça görünmez.</p>
+  <h3>Bilgiler</h3>
+  <p class="alt">Tam ekran: sağ üstteki düğme ya da F tuşu. iPad/iPhone'da Safari'de <b>Paylaş → Ana Ekrana Ekle</b>,
+     Android'de Chrome menüsünden <b>Ana ekrana ekle</b> ile uygulama gibi tam ekran açılır.
+     TV kumandası: OK/Enter yem atar, R rehber, N gece, M ses, F tam ekran.</p>
+  <h3>Fotoğraf kaynakları</h3>
+  <p class="alt">Balıkların ve akvaryumun hepsi gerçek fotoğraftır (Wikimedia Commons). Balıkların zeminleri silinip
+     yüzecek şekilde hareketlendirildi; arka plandaki fotoğraftan birkaç hareketsiz balık silindi.</p>
+  <ul id="kaynakListe"></ul>
+</div>
+
+<script src="lib/pixi-7.4.2.min.js"></script>
+<script src="img/balik/kaynaklar.js"></script>
+<script src="muzik/liste.js"></script>
+<script>
+"use strict";
+// =====================================================================
+//  Yardımcılar ve ayarlar
+// =====================================================================
+const rnd = (a, b) => a + Math.random() * (b - a);
+const lerp = (a, b, k) => a + (b - a) * k;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const pick = arr => arr[(Math.random() * arr.length) | 0];
+const kayit = {
+  oku(k, v) { try { const x = localStorage.getItem("akvaryum_" + k); return x === null ? v : JSON.parse(x); } catch (e) { return v; } },
+  yaz(k, v) { try { localStorage.setItem("akvaryum_" + k, JSON.stringify(v)); } catch (e) {} },
+};
+
+// Balık türleri: adlar kaynaklar.js'ten; boy/davranış ayarları burada.
+// L: boy (ekran ölçeğinde), hiz: px/sn, bolge: alt/orta/ust/hepsi,
+// dalga: kuyruk sallanma (boyun oranı), sag: fotoğrafta sağa bakıyor
+const VARSAYILAN = { L: 100, hiz: 34, bolge: "hepsi", dalga: 0.035 };
+const AYAR = {
+  // küçükler, dipte gezenler
+  neon_gobi: { L: 52, hiz: 26, bolge: "alt", dalga: 0.06, sag: true },
+  gobi_maskeli: { L: 52, bolge: "alt", hiz: 22 }, gobi_leopar: { L: 52, bolge: "alt", hiz: 22 },
+  gobi_sariburun: { L: 55, bolge: "alt", hiz: 24, dalga: 0.05 }, gobi_kirmizi: { L: 48, bolge: "alt", hiz: 20 },
+  gobi_bantli: { L: 52, bolge: "alt", hiz: 20 }, gobi_pas: { L: 52, bolge: "alt", hiz: 20, sag: true },
+  horoz_bayrakli: { L: 55, bolge: "alt", hiz: 20 }, horoz_palyaco: { L: 60, bolge: "alt", hiz: 20 },
+  horoz_benekli: { L: 60, bolge: "alt", hiz: 20 }, ucyuzgec: { L: 52, bolge: "alt", hiz: 20 },
+  cene_sari: { L: 72, bolge: "alt", hiz: 22, dalga: 0.05 }, cene_benekli: { L: 62, bolge: "alt", hiz: 20 },
+  yildizbakan: { L: 60, bolge: "alt", hiz: 18 }, sahin_benekli: { L: 65, bolge: "alt", hiz: 22 },
+  cizgili_levrek: { L: 70, bolge: "alt", hiz: 24 }, arlekin: { L: 85, bolge: "alt", hiz: 28 },
+  davulcu: { L: 90, bolge: "alt", hiz: 22, dalga: 0.03 }, davulcu_sapkali: { L: 82, bolge: "alt", hiz: 22 },
+  barbunya_sari: { L: 115, bolge: "alt", hiz: 36 }, barbunya_benekli: { L: 110, bolge: "alt", hiz: 32 },
+  kertenkele: { L: 115, bolge: "alt", hiz: 24, dalga: 0.045 }, mersin: { L: 210, bolge: "alt", hiz: 22, dalga: 0.04 },
+  iskorpit: { L: 88, bolge: "alt", hiz: 14 }, iskorpit_puskullu: { L: 92, bolge: "alt", hiz: 14 },
+  kurbaga: { L: 78, bolge: "alt", hiz: 10, dalga: 0.02 }, hani_turuncu: { L: 100, bolge: "alt", hiz: 28 },
+  orfoz_benekli: { L: 105, bolge: "alt", hiz: 26 }, orfoz_kirmizi: { L: 115, bolge: "alt", hiz: 26 },
+  kaya_dikenli: { L: 95, bolge: "alt", hiz: 18 }, kaya_kirmizi: { L: 95, bolge: "alt", hiz: 20 },
+  // küçük resif balıkları
+  gramma: { L: 55, hiz: 28 }, kardinal_alev: { L: 60, bolge: "orta", hiz: 22 }, kardinal_bantli: { L: 62, bolge: "orta", hiz: 22 },
+  kiz_ikirenk: { L: 60, hiz: 30 }, kiz_sari: { L: 60, hiz: 30 }, cuce_melek: { L: 62, bolge: "orta", hiz: 28, dalga: 0.025 },
+  lapin_yesil: { L: 62, hiz: 32 }, kutu_yavru: { L: 40, hiz: 14, dalga: 0.012 }, levrek_fener: { L: 65, hiz: 26 },
+  levrek_tebesir: { L: 60, hiz: 26 }, hamlet: { L: 78, hiz: 28 }, kromis_mavi: { L: 72, bolge: "ust", hiz: 36 },
+  cam_baligi: { L: 70, hiz: 32, sag: true }, asker_utangac: { L: 75, hiz: 24 },
+  // yavaş ve tuhaf olanlar
+  denizati: { L: 42, hiz: 9, dalga: 0.004, dik: true }, kirpi: { L: 100, hiz: 16, dalga: 0.01 },
+  kirpi_agdesenli: { L: 98, hiz: 16, dalga: 0.012 }, kutu_benekli: { L: 85, hiz: 18, dalga: 0.015 },
+  kutu_ucgen: { L: 95, hiz: 18, dalga: 0.015 }, balon_sivri: { L: 70, hiz: 22, dalga: 0.02 },
+  balon_bantli: { L: 85, hiz: 22, dalga: 0.02 }, dulger: { L: 82, hiz: 16, dalga: 0.015 },
+  culluk: { L: 70, hiz: 16, dalga: 0.012 }, ustura: { L: 92, hiz: 14, dalga: 0.006 },
+  dosya_benekli: { L: 95, hiz: 20, dalga: 0.02 }, dosya_kirpikli: { L: 72, hiz: 20, dalga: 0.02 },
+  dosya_ince: { L: 85, hiz: 20, dalga: 0.02 }, trompet: { L: 210, hiz: 24, dalga: 0.02 },
+  kelebek_cizgili: { L: 80, hiz: 28, dalga: 0.02 }, kelebek_dortgoz: { L: 80, hiz: 28, dalga: 0.02 },
+  kelebek_uzunburun: { L: 66, hiz: 28, dalga: 0.02 }, kayaguzeli: { L: 100, bolge: "orta", hiz: 28, dalga: 0.025 },
+  tetik: { L: 110, bolge: "orta", hiz: 26, dalga: 0.025 }, tetik_picasso: { L: 100, hiz: 26, dalga: 0.025 },
+  uckuyruk: { L: 125, bolge: "orta", hiz: 18 }, irigoz: { L: 85, hiz: 24 },
+  // büyükler ve hızlılar
+  kopekbaligi_siyahuc: { L: 250, bolge: "ust", hiz: 48, dalga: 0.05 },
+  kopekbaligi_mako: { L: 260, bolge: "ust", hiz: 52, dalga: 0.045 },
+  orkinos: { L: 180, bolge: "ust", hiz: 70, dalga: 0.03 }, yazili_orkinos: { L: 165, bolge: "ust", hiz: 70, dalga: 0.03 },
+  istavrit: { L: 115, bolge: "ust", hiz: 58 }, istavrit_irigoz: { L: 110, bolge: "ust", hiz: 55 },
+  gar: { L: 200, bolge: "orta", hiz: 30, dalga: 0.03 }, turna: { L: 180, bolge: "orta", hiz: 34, dalga: 0.035 },
+  alabalik: { L: 145, bolge: "orta", hiz: 40 }, levrek_kucukagiz: { L: 135, hiz: 34, sag: true },
+  perka: { L: 110, hiz: 32, sag: true }, levrek_beyaz: { L: 120, bolge: "orta", hiz: 38 },
+  ciklit_elektra: { L: 110, hiz: 32, sag: true }, krapi: { L: 90, hiz: 28 }, gunes_yesil: { L: 85, hiz: 28 },
+  gunes_kirmizikulak: { L: 85, hiz: 28 },
+  papagan_kirmizi: { L: 145, bolge: "orta", hiz: 34 }, papagan_bantli: { L: 125, bolge: "orta", hiz: 34 },
+  papagan_prenses: { L: 125, bolge: "orta", hiz: 36 }, papagan_gokkusagi: { L: 155, bolge: "orta", hiz: 32 },
+  papagan_mavi: { L: 135, bolge: "orta", hiz: 34 }, papagan_pembe: { L: 100, hiz: 32 },
+  cerrah_mavi: { L: 120, bolge: "orta", hiz: 40 }, cerrah_doktor: { L: 120, bolge: "orta", hiz: 40 },
+  cerrah_sarikuyruk: { L: 120, bolge: "orta", hiz: 40 },
+  homurdanan: { L: 95, bolge: "orta", hiz: 40 }, homurdanan_mavi: { L: 105, bolge: "orta", hiz: 38 },
+  homurdanan_karakuyruk: { L: 110, bolge: "orta", hiz: 38 }, homurdanan_beyaz: { L: 100, bolge: "orta", hiz: 36 },
+  tranca_karayuzgec: { L: 120, bolge: "orta", hiz: 36 }, tranca_kizil: { L: 115, bolge: "orta", hiz: 38 },
+  mercan_serit: { L: 110, bolge: "orta", hiz: 36 }, kreol: { L: 95, bolge: "ust", hiz: 42 },
+  lapin_mor: { L: 100, bolge: "ust", hiz: 44 }, lapin_mavibas: { L: 85, hiz: 48, dalga: 0.05 },
+  lapin_ikicizgi: { L: 85, hiz: 46, dalga: 0.05 }, lapin_saribas: { L: 90, hiz: 46, dalga: 0.05 },
+  lapin_ressam: { L: 80, hiz: 46, dalga: 0.05 }, lapin_karakulak: { L: 85, hiz: 46, dalga: 0.05 },
+  ustura_yesil: { L: 90, hiz: 40, dalga: 0.045 }, domuz_ispanyol: { L: 115, hiz: 36 },
+  asker: { L: 105, bolge: "orta", hiz: 30 }, sincap: { L: 110, bolge: "orta", hiz: 30 },
+  sincap_uzuncene: { L: 105, bolge: "orta", hiz: 30 }, sincap_cizgili: { L: 100, bolge: "orta", hiz: 30 },
+  sabun_sari: { L: 95, hiz: 26 }, sabun_benekli: { L: 100, hiz: 26 },
+};
+// Avcılar (gerçekte küçük balık avlayanlar). "pusu": olduğu yerde bekleyip yakından geçeni kapar.
+const AVCILAR = {
+  kopekbaligi_siyahuc: 1, kopekbaligi_mako: 1, orkinos: 1, yazili_orkinos: 1, istavrit: 1, istavrit_irigoz: 1,
+  orfoz_benekli: 1, orfoz_kirmizi: 1, hani_turuncu: 1, tranca_karayuzgec: 1, tranca_kizil: 1, mercan_serit: 1,
+  trompet: 1, gar: 1, turna: 1, levrek_kucukagiz: 1, levrek_beyaz: 1, krapi: 1, perka: 1, alabalik: 1,
+  sabun_sari: 1, sabun_benekli: 1, kaya_kirmizi: 1, kaya_dikenli: 1, uckuyruk: 1, hamlet: 1, arlekin: 1,
+  iskorpit: "pusu", iskorpit_puskullu: "pusu", kurbaga: "pusu", kertenkele: "pusu",
+};
+// Dikenli, zehirli ya da zırhlı olduğu için avlanmayanlar (bir de çocukların sevdiği denizatı)
+const KORUNAKLI = new Set(["kirpi", "kirpi_agdesenli", "balon_sivri", "balon_bantli", "kutu_benekli", "kutu_ucgen",
+  "kutu_yavru", "iskorpit", "iskorpit_puskullu", "denizati", "tetik", "tetik_picasso"]);
+const KODLAR = Object.keys(window.KAYNAKLAR || {});
+const tur = kod => Object.assign({}, VARSAYILAN, AYAR[kod] || {});
+const adi = kod => (window.KAYNAKLAR && KAYNAKLAR[kod]) ? KAYNAKLAR[kod].ad : kod;
+const bilimAdi = kod => (window.KAYNAKLAR && KAYNAKLAR[kod] && KAYNAKLAR[kod].bilim) || "";
+const ayar = {
+  muzik: kayit.oku("muzik", true),
+  kan: kayit.oku("kan", true),   // gerçekçi av: kan bulutu ve artık parçalar
+};
+
+// =====================================================================
+//  PixiJS uygulaması ve kalite ayarı
+// =====================================================================
+const DPR = window.devicePixelRatio || 1;
+// 4K için tam çözünürlük; yavaş cihazda kendiliğinden düşer
+let kalite = kayit.oku("kalite", Math.min(DPR, 2.5));
+const app = new PIXI.Application({
+  resizeTo: window,
+  backgroundColor: 0x062f55,
+  antialias: false,
+  resolution: kalite,
+  autoDensity: true,
+  powerPreference: "high-performance",
+});
+document.body.prepend(app.view);
+let W = app.screen.width, H = app.screen.height, S = 1;
+
+const katman = {
+  arka: new PIXI.Container(),     // arka plan fotoğrafı
+  isik: new PIXI.Container(),     // ışık oyunları ve hüzmeler
+  uzak: new PIXI.Container(),     // uzaktaki balıklar (suya bürünmüş renkte)
+  yakin: new PIXI.Container(),    // yakındaki balıklar
+  parca: new PIXI.Container(),    // yem, kabarcık, parçacık
+  ust: new PIXI.Container(),      // kenar karartma, gece, etiketler
+};
+for (const k of Object.values(katman)) app.stage.addChild(k);
+
+// ---------------------------------------------------------------------
+//  Kodla üretilen dokular (yüklemeye gerek kalmasın)
+// ---------------------------------------------------------------------
+function tuvalDoku(w, h, ciz) {
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  ciz(c.getContext("2d"), w, h);
+  return PIXI.Texture.from(c);
+}
+
+// Su ışığı (kostik) deseni: döşenebilir Voronoi çizgileri
+const kostikDoku = (() => {
+  const N = 512, c = document.createElement("canvas");
+  c.width = c.height = N;
+  const g = c.getContext("2d"), img = g.createImageData(N, N);
+  const P = [];
+  for (let i = 0; i < 70; i++) P.push([Math.random() * N, Math.random() * N]);
+  const TAU = Math.PI * 2;
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      // Koordinatları dalgalandır: düz kenarlar yerine kıvrımlı ışık çizgileri
+      const wx = x + 9 * Math.sin(y * TAU / 128) + 5 * Math.sin((x + y) * TAU / 64);
+      const wy = y + 9 * Math.sin(x * TAU / 128) + 5 * Math.cos((x - y) * TAU / 64);
+      let d1 = 1e9, d2 = 1e9;
+      for (const [px, py] of P) {
+        for (let oy = -N; oy <= N; oy += N) {
+          for (let ox = -N; ox <= N; ox += N) {
+            const dx = wx - px - ox, dy = wy - py - oy, d = dx * dx + dy * dy;
+            if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+          }
+        }
+      }
+      const e = Math.sqrt(d2) - Math.sqrt(d1);
+      const v = Math.pow(clamp(1 - e / 9, 0, 1), 2) * 255;
+      const o = (y * N + x) * 4;
+      img.data[o] = v * 0.85; img.data[o + 1] = v; img.data[o + 2] = v; img.data[o + 3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  // Yumuşat (destekleyen tarayıcıda)
+  const c2 = document.createElement("canvas");
+  c2.width = c2.height = N;
+  const g2 = c2.getContext("2d");
+  if ("filter" in g2) { g2.filter = "blur(2px)"; }
+  // Döşenebilirlik bozulmasın: 3x3 kopyayla bulanıklaştır
+  for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) g2.drawImage(c, ox * N, oy * N);
+  return PIXI.Texture.from(c2);
+})();
+
+const kabarcikDoku = tuvalDoku(64, 64, (g) => {
+  const r = g.createRadialGradient(32, 32, 18, 32, 32, 31);
+  r.addColorStop(0, "rgba(255,255,255,0.05)");
+  r.addColorStop(0.8, "rgba(220,245,255,0.35)");
+  r.addColorStop(1, "rgba(255,255,255,0.9)");
+  g.fillStyle = r;
+  g.beginPath(); g.arc(32, 32, 30, 0, 7); g.fill();
+  g.fillStyle = "rgba(255,255,255,0.9)";
+  g.beginPath(); g.ellipse(22, 20, 7, 4, -0.6, 0, 7); g.fill();
+});
+
+const noktaDoku = tuvalDoku(32, 32, (g) => {
+  const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  r.addColorStop(0, "rgba(255,255,255,1)");
+  r.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = r;
+  g.fillRect(0, 0, 32, 32);
+});
+
+const yemDoku = tuvalDoku(24, 16, (g) => {
+  g.fillStyle = "#c8742c";
+  g.beginPath(); g.ellipse(12, 8, 10, 6, 0.3, 0, 7); g.fill();
+  g.fillStyle = "rgba(255,220,160,0.6)";
+  g.beginPath(); g.ellipse(9, 6, 4, 2, 0.3, 0, 7); g.fill();
+});
+
+// ---------------------------------------------------------------------
+//  Sahne: arka plan, ışık, pus, karartma
+// ---------------------------------------------------------------------
+const arkaplan = new PIXI.Sprite(PIXI.Texture.EMPTY);
+arkaplan.anchor.set(0.5);
+katman.arka.addChild(arkaplan);
+(function arkaplanYukle() {
+  const piksel = Math.max(screen.width, screen.height) * DPR;
+  const genislik = piksel > 2600 ? 3840 : piksel > 1400 ? 1920 : 1280;
+  const yukle = w => PIXI.Assets.load(`img/arkaplan-${w}.webp`).then(t => { arkaplan.texture = t; yerlestir(); });
+  // Önce küçüğü göster, büyüğü gelince değiştir
+  yukle(1280).then(() => { document.getElementById("yukleniyor").style.opacity = 0; if (genislik > 1280) yukle(genislik); });
+})();
+
+// Su ışığı: tek geçişte çizen küçük bir ekran kartı programı (4K'da ucuz olsun diye).
+// İki kayan desenin kesişimi alınır; üstte (açık suda) soluk, aşağıda (mercanlarda) belirgin.
+kostikDoku.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
+const kostikGeo = new PIXI.Geometry()
+  .addAttribute("aVertexPosition", [0, 0, 1, 0, 1, 1, 0, 1], 2)
+  .addAttribute("aUv", [0, 0, 1, 0, 1, 1, 0, 1], 2)
+  .addIndex([0, 1, 2, 0, 2, 3]);
+const kostikShader = PIXI.Shader.from(`
+  precision mediump float;
+  attribute vec2 aVertexPosition;
+  attribute vec2 aUv;
+  uniform mat3 translationMatrix;
+  uniform mat3 projectionMatrix;
+  uniform vec2 uBoyut;
+  varying vec2 vUv;
+  void main() {
+    vUv = aUv;
+    vec3 p = projectionMatrix * translationMatrix * vec3(aVertexPosition * uBoyut, 1.0);
+    gl_Position = vec4(p.xy, 0.0, 1.0);
+  }`, `
+  precision mediump float;
+  varying vec2 vUv;
+  uniform sampler2D uDoku;
+  uniform float uZaman;
+  uniform vec2 uOlcek;
+  uniform float uGuc;
+  uniform float uOran;       // en / boy
+  uniform float uGece;       // 0 gündüz, 1 gece
+  uniform vec4 uHuzme[6];    // x, genişlik, parlaklık, eğim
+  void main() {
+    // Su ışığı (kostik)
+    vec2 p = vUv * uOlcek;
+    float a = texture2D(uDoku, p + vec2(uZaman * 0.017, uZaman * 0.009)).r;
+    float b = texture2D(uDoku, p * 1.37 + vec2(-uZaman * 0.013, uZaman * 0.015)).r;
+    float c = min(a, b) * 1.7 + (a + b) * 0.18;
+    float isik = c * uGuc * smoothstep(0.28, 0.65, vUv.y);
+    // Yukarıdan inen ışık hüzmeleri
+    float huzme = 0.0;
+    for (int i = 0; i < 6; i++) {
+      vec4 h = uHuzme[i];
+      float x = vUv.x - (h.x + h.w * vUv.y);
+      huzme += h.z * exp(-x * x / (h.y * h.y)) * pow(1.0 - vUv.y, 1.6);
+    }
+    isik += huzme;
+    // Kenar karartması ve gece
+    vec2 q = (vUv - 0.5) * vec2(uOran, 1.0) / max(uOran, 1.0);
+    float kenar = smoothstep(0.32, 0.78, length(q)) * 0.55;
+    float karanlik = 1.0 - (1.0 - kenar) * (1.0 - 0.62 * uGece);
+    // Önceden çarpılmış renk: ışık eklenir, alfa kadar karartılır
+    gl_FragColor = vec4(vec3(0.82, 1.0, 1.0) * isik * (1.0 - karanlik * 0.6), karanlik);
+  }`, {
+  uDoku: kostikDoku, uZaman: 0, uOlcek: [1, 1], uGuc: 0.1, uBoyut: [100, 100], uOran: 1, uGece: 0,
+  uHuzme: new Float32Array(24),
+  translationMatrix: new PIXI.Matrix().toArray(true),
+});
+const kostik = new PIXI.Mesh(kostikGeo, kostikShader);
+
+// Işık hüzmeleri (kostik programının içinde çizilir)
+const huzmeler = [];
+for (let i = 0; i < 6; i++) {
+  huzmeler.push({ x: rnd(0.05, 0.95), w: rnd(0.015, 0.045), a: rnd(0.05, 0.1), s: rnd(0.12, 0.3), p: rnd(0, 6), egim: rnd(-0.12, 0.12) });
+}
+
+// Kenar karartması ve gece de aynı programda; bu yüzden en üstte, balıkların üstünde duruyor.
+// Yumuşak geçişli olduğu için yarım çözünürlükte çizilip büyütülür (4K'da 4 kat ucuz).
+let isikRT = PIXI.RenderTexture.create({ width: 16, height: 16, resolution: 1 });
+const isikSprite = new PIXI.Sprite(isikRT);
+katman.ust.addChild(isikSprite);
+const etiketKatman = new PIXI.Container();
+katman.ust.addChild(etiketKatman);
+
+
+// Suda süzülen parçacıklar (deniz karı) ve gece parlayan planktonlar
+const parcaciklar = [];
+const parcacikKap = new PIXI.ParticleContainer(400, { position: true, alpha: true, scale: true });
+katman.parca.addChild(parcacikKap);
+for (let i = 0; i < 160; i++) {
+  const p = new PIXI.Sprite(noktaDoku);
+  p.anchor.set(0.5);
+  p.ozel = { x: Math.random(), y: Math.random(), z: rnd(0.3, 1), vx: rnd(-0.004, 0.004), vy: rnd(-0.002, 0.006), ph: rnd(0, 6) };
+  parcacikKap.addChild(p);
+  parcaciklar.push(p);
+}
+
+function yerlestir() {
+  W = app.screen.width; H = app.screen.height;
+  // Dik telefonda da balıklar çok küçülmesin
+  S = Math.max(0.6, Math.min(W * 1.25, H * 1.5) / 760);
+  const t = arkaplan.texture;
+  if (t && t.width > 1) {
+    const s = Math.max(W / t.width, H / t.height) * 1.05;
+    arkaplan.scale.set(s);
+  }
+  kostikShader.uniforms.uBoyut = [W, H];
+  // Desen hücreleri ekranda ~40 px olsun (ekran ölçeğiyle büyür)
+  kostikShader.uniforms.uOlcek = [W / (512 * 0.6 * S), H / (512 * 0.6 * S)];
+  kostikShader.uniforms.uOran = W / H;
+  const yeniRT = PIXI.RenderTexture.create({ width: Math.ceil(W), height: Math.ceil(H), resolution: Math.max(0.5, app.renderer.resolution * 0.5) });
+  isikSprite.texture = yeniRT;
+  isikRT.destroy(true);
+  isikRT = yeniRT;
+}
+window.addEventListener("resize", () => setTimeout(yerlestir, 50));
+yerlestir();
+
+// =====================================================================
+//  Balıklar
+// =====================================================================
+const dokular = {};          // kod -> Texture
+const yukleniyor = {};       // kod -> Promise
+function dokuYukle(kod) {
+  if (!yukleniyor[kod]) {
+    yukleniyor[kod] = PIXI.Assets.load(`img/balik/${kod}.webp`).then(t => (dokular[kod] = t)).catch(() => null);
+  }
+  return yukleniyor[kod];
+}
+
+const baliklar = [];
+const ZEMIN = () => H * 0.9; // yemin düştüğü ve dipte gezenlerin indiği yer
+const SEGMENT = 14;  // boyuna sütun sayısı
+const SATIR = 5;     // enine satır sayısı
+
+class Balik {
+  constructor(kod, giris = 0) {
+    this.kod = kod;
+    this.d = tur(kod);
+    this.doku = dokular[kod];
+    this.z = rnd(0.72, 1.1);
+    // Izgara ağ: sütunlar boyunca kuyruk dalgası, alt satırlarda karın şişmesi
+    this.ip = new PIXI.SimplePlane(this.doku, SEGMENT, SATIR);
+    this.ip.position.set(-this.doku.width / 2, -this.doku.height / 2);
+    this.koseler = this.ip.geometry.getBuffer("aVertexPosition");
+    this.doyma = 0;        // 0 aç, 1 çok tok (karın şişer)
+    this.kap = new PIXI.Container();
+    this.kap.addChild(this.ip);
+    (this.z < 0.86 ? katman.uzak : katman.yakin).addChild(this.kap);
+    this.renk();
+
+    const [a, b] = this.bolge();
+    this.y = rnd(a, b);
+    if (giris) {
+      this.x = giris < 0 ? -this.w : W + this.w;
+      this.vx = -giris * this.d.hiz * S;
+    } else {
+      this.x = rnd(0.05, 0.95) * W;
+      this.vx = rnd(-1, 1) * this.d.hiz * S;
+    }
+    this.vy = 0;
+    this.yon = Math.sign(this.vx) || 1;
+    this.f = this.yon;
+    this.egim = 0;
+    this.dalgaFaz = rnd(0, 6);
+    this.hizlan = 0;
+    this.gidiyor = false;
+    this.cagrildi = 0;
+    this.kapma = null;    // ağzıyla yem kapma anı
+    this.nabiz = 0;       // kapma/yutma sırasında kısa bir atılma
+    this.av = null;       // kovaladığı balık
+    this.kovalayan = null; // ondan kaçtığı balık
+    this.tok = 0;          // av yedikten sonra bir süre avlanmaz
+    this.irkil = 0;        // dokununca kısa titreme
+    this.avci = AVCILAR[kod] || null;
+    this.yeniHedef();
+  }
+  get w() { return this.d.L * S * this.z; }
+  get h() { return this.w * this.doku.height / this.doku.width; }
+  renk() {
+    // Uzaktakiler suyun rengine bürünür (kırmızı ilk kaybolur), yakındakiler canlı
+    const k = clamp((this.z - 0.72) / 0.38, 0, 1);
+    // Yakındakiler de hafif su tonu alır, stüdyo fotoğrafı gibi parlamasın
+    const r = lerp(0.66, 0.92, k), g = lerp(0.83, 0.97, k), b = lerp(0.95, 1, k);
+    this.ip.tint = (Math.round(r * 255) << 16) | (Math.round(g * 255) << 8) | Math.round(b * 255);
+    this.renkTon = this.ip.tint;
+    this.kap.alpha = lerp(0.82, 1, k);
+  }
+  bolge() {
+    const ust = H * 0.08, alt = ZEMIN() - this.h * 0.5;
+    switch (this.d.bolge) {
+      case "alt": return [Math.max(ust, H * 0.62), alt];
+      case "ust": return [ust, H * 0.45];
+      case "orta": return [H * 0.18, H * 0.72];
+      default: return [ust, alt];
+    }
+  }
+  yeniHedef() {
+    const [a, b] = this.bolge();
+    this.tx = rnd(0.03, 0.97) * W;
+    this.ty = rnd(a, b);
+    this.sure = rnd(4, 12);
+    this.dinlen = Math.random() < 0.3 ? rnd(1, 4) : 0;
+  }
+  git() {
+    this.gidiyor = true;
+    this.cikisX = this.x < W / 2 ? -this.w * 1.6 : W + this.w * 1.6;
+  }
+  // Ağzın yaklaşık yeri (burun ucu)
+  get agizX() { return this.x + Math.sign(this.f || 1) * this.w * 0.47; }
+  get agizY() { return this.y + this.h * 0.06; }
+  guncelle(dt) {
+    let hiz = this.d.hiz * S * (0.8 + this.z * 0.25) * (gece.k > 0.5 ? 0.6 : 1);
+    if (this.tok > 0) { this.tok -= dt; hiz *= 0.8; }
+    let tx = this.tx, ty = this.ty, ani = 1.1;
+    const yem = (this.gidiyor || this.av || this.kovalayan || this.kapma) ? null : this.enYakinYem();
+    if (this.av && (this.av.olu || this.av.gidiyor)) this.av = null;
+    if (this.kovalayan && (this.kovalayan.olu || !this.kovalayan.av)) this.kovalayan = null;
+
+    if (this.gidiyor) {
+      tx = this.cikisX; ty = this.y;
+    } else if (this.kovalayan) {
+      // Kaçış: avcının tersine, biraz da yukarı/aşağı sapar
+      const ax = this.x - this.kovalayan.x, ay = this.y - this.kovalayan.y, d = Math.hypot(ax, ay) || 1;
+      tx = this.x + ax / d * 200 * S; ty = this.y + ay / d * 120 * S + Math.sin(t * 5 + this.dalgaFaz) * 40 * S;
+      hiz *= 2.1; ani = 4;
+    } else if (this.av) {
+      // Kovalama: avın gideceği yere doğru
+      tx = this.av.x + this.av.vx * 0.25; ty = this.av.y + this.av.vy * 0.25;
+      hiz = Math.max(hiz, this.av.d.hiz * S) * (this.avci === "pusu" ? 4.5 : 2.6); ani = 4;
+      this.avSure -= dt;
+      if (this.avSure <= 0) this.avBirak();
+    } else if (this.kapma) {
+      tx = this.kapma.p.x; ty = this.kapma.p.y; hiz *= 0.4;
+    } else if (yem) {
+      tx = yem.x; ty = yem.y; hiz *= 1.8;
+    } else if (yem_tutucu && Math.hypot(yem_tutucu.x - this.x, yem_tutucu.y - this.y) < 360 * S) {
+      tx = yem_tutucu.x; ty = yem_tutucu.y; hiz *= 1.4;
+    } else {
+      this.sure -= dt;
+      const vardi = Math.hypot(tx - this.x, ty - this.y) < 25 * S;
+      if (this.avci === "pusu") hiz *= 0.25; // pusucular az kıpırdar
+      if (vardi && this.dinlen > 0) { this.dinlen -= dt; hiz *= 0.15; }
+      else if (this.sure < 0 || vardi) this.yeniHedef();
+    }
+    if (this.hizlan > 0) { this.hizlan -= dt; hiz *= 2.4; ani = 5; }
+
+    const dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy) || 1;
+    const yavas = (this.gidiyor || this.av || this.kovalayan) ? 1 : clamp(d / (60 * S), 0.2, 1);
+    const k = Math.min(1, dt * ani);
+    this.vx = lerp(this.vx, dx / d * hiz * yavas, k);
+    this.vy = lerp(this.vy, dy / d * hiz * yavas * (this.d.dik ? 1 : 0.55), k);
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.y = clamp(this.y, H * 0.05, ZEMIN() - this.h * 0.25);
+    if (!this.gidiyor) this.x = clamp(this.x, -this.w * 1.7, W + this.w * 1.7);
+
+    const sp = Math.hypot(this.vx, this.vy);
+    if (Math.abs(this.vx) > 3 * S) this.yon = Math.sign(this.vx);
+    this.f = lerp(this.f, this.yon, Math.min(1, dt * 3));
+    const hedefEgim = this.d.dik ? 0 : clamp(Math.atan2(this.vy, Math.abs(this.vx) + 2) * 0.8, -0.35, 0.35);
+    this.egim = lerp(this.egim, hedefEgim, Math.min(1, dt * 3));
+    this.dalgaFaz += dt * (3 + sp / (5 * S));
+    if (this.nabiz > 0) this.nabiz = Math.max(0, this.nabiz - dt);
+    // Tokluk yavaşça geçer (dolu mide birkaç dakikada iner)
+    this.doyma = Math.max(0, this.doyma - dt * 0.004);
+    if (this.irkil > 0) this.irkil = Math.max(0, this.irkil - dt);
+
+    // Yemi ağzıyla kapma: yem ağza çekilir, küçülür, balık kısa bir atılma yapar
+    if (yem && !this.kapma && !yem.kapan) {
+      if (Math.hypot(yem.x - this.agizX, yem.y - this.agizY) < this.h * 0.5 + 14 * S) {
+        this.kapma = { p: yem, t: 0 };
+        yem.kapan = this;
+        this.nabiz = 0.28;
+      }
+    }
+    if (this.kapma) {
+      const p = this.kapma.p;
+      this.kapma.t += dt;
+      const k2 = Math.min(1, this.kapma.t / 0.2);
+      p.x = lerp(p.x, this.agizX, k2); p.y = lerp(p.y, this.agizY, k2);
+      p.s.scale.set(p.olcek * (1 - k2 * 0.85));
+      if (this.kapma.t >= 0.22) {
+        // Küçük balığa bir yem daha çok dolgunluk verir
+        this.doyma = Math.min(1, this.doyma + (p.et ? 0.18 : 0.07) * clamp(90 / this.d.L, 0.5, 1.6));
+        yemSil(p);
+        kirinti(this.agizX, this.agizY);
+        kabarcik(this.agizX, this.agizY - 2, rnd(2, 3.5) * S);
+        ses.yudum();
+        this.kapma = null;
+      }
+    }
+
+    // Av: ağız avın gövdesine değince yakalar
+    if (this.av) {
+      const av = this.av;
+      if (Math.hypot(av.x - this.agizX, av.y - this.agizY) < this.h * 0.45 + av.h * 0.35) avYakala(this, av);
+    }
+    if (Math.random() < dt * 0.02) kabarcik(this.agizX, this.agizY, rnd(1.5, 2.5) * S);
+    return !(this.gidiyor && (this.x < -this.w * 1.4 || this.x > W + this.w * 1.4));
+  }
+  enYakinYem() {
+    let en = null, ed = 420 * S;
+    for (const p of yemler) {
+      if (p.kapan) continue;
+      if (p.dipte && this.d.bolge !== "alt") continue;
+      // Av artıklarını (et parçaları) yalnızca etçil/her şeyi yiyen balıklar değil, herkes kapar
+      const d = Math.hypot(p.x - this.x, p.y - this.y);
+      if (d < ed) { ed = d; en = p; }
+    }
+    return en;
+  }
+  avBirak() {
+    if (this.av) this.av.kovalayan = null;
+    this.av = null;
+    this.tok = rnd(20, 35); // bir süre dinlensin
+  }
+  ciz() {
+    const tw = this.doku.width, th = this.doku.height;
+    const sol = !this.d.sag; // fotoğrafta baş solda
+    const genlik = this.d.dalga * tw;
+    const v = this.koseler.data;
+    const sis = this.doyma * th * 0.16;
+    for (let i = 0; i < SEGMENT; i++) {
+      const s = i / (SEGMENT - 1);
+      const u = sol ? s : 1 - s; // 0 baş, 1 kuyruk
+      const dalga = Math.sin(this.dalgaFaz - u * 3.2) * genlik * u * u;
+      // Karın: başın biraz gerisinden kuyruk sapına kadar, ortada en çok
+      const karin = sis * Math.pow(Math.sin(Math.PI * clamp((u - 0.12) / 0.62, 0, 1)), 1.5);
+      for (let j = 0; j < SATIR; j++) {
+        const r = j / (SATIR - 1);
+        const o = (j * SEGMENT + i) * 2;
+        v[o] = s * tw;
+        v[o + 1] = r * th + dalga + (r > 0.5 ? karin * (r - 0.5) * 2 : karin * 0.15 * (0.5 - r) * -2);
+      }
+    }
+    this.koseler.update();
+    // Kapma/yutma anında kısa atılma (biraz uzar), dokununca titreme
+    const atil = this.nabiz > 0 ? Math.sin((1 - this.nabiz / 0.28) * Math.PI) * 0.09 : 0;
+    const titre = this.irkil > 0 ? Math.sin(this.irkil * 70) * 0.06 * (this.irkil / 0.5) : 0;
+    const olcek = this.w / tw;
+    const fx = Math.abs(this.f) < 0.12 ? 0.12 * Math.sign(this.f || 1) : this.f;
+    // Burun hareket yönüne baksın
+    this.kap.scale.set(olcek * fx * (sol ? -1 : 1) * (1 + atil), olcek * (1 - atil * 0.4));
+    // Döndürme ekran düzleminde: sağa giderken + eğim burnu aşağı indirir, sola giderken tersi
+    this.kap.rotation = this.egim * Math.sign(fx) + titre;
+    this.kap.position.set(this.x + Math.sign(fx) * atil * this.w * 0.25, this.y + (this.d.dik ? Math.sin(this.dalgaFaz * 0.3) * 4 * S : 0));
+  }
+  vurdu(px, py) {
+    return Math.abs(px - this.x) < this.w * 0.5 * Math.max(0.35, Math.abs(this.f)) && Math.abs(py - this.y) < Math.max(this.h * 0.5, 22 * S);
+  }
+  yokEt() {
+    this.olu = true;
+    if (this.kapma) { this.kapma.p.kapan = null; this.kapma = null; }
+    if (this.av) this.av.kovalayan = null;
+    this.kap.destroy({ children: true });
+  }
+}
+
+// ---------------------------------------------------------------------
+//  Nüfus: her balık farklı tür; zaman zaman biri gider, yenisi gelir
+// ---------------------------------------------------------------------
+let kesif = new Set(kayit.oku("kesif", []));
+let ilkDolum = true, donguSayac = rnd(14, 22), girisBekle = 0;
+const hedefSayi = () => Math.round(clamp(W * H / 30000, 10, 32));
+const aktifTurler = () => new Set(baliklar.map(b => b.kod));
+
+function yeniTurSec() {
+  const aktif = aktifTurler();
+  // Yenen türler bir süre gelmez; sonra fark ettirmeden kenardan yeniden girer
+  const adaylar = KODLAR.filter(k => !aktif.has(k) && !beklenen.has(k) && !((yenenler.get(k) || 0) > t));
+  if (!adaylar.length) return null;
+  // Keşfedilmemişlere biraz öncelik
+  const yeniler = adaylar.filter(k => !kesif.has(k));
+  return (yeniler.length && Math.random() < 0.6) ? pick(yeniler) : pick(adaylar);
+}
+const beklenen = new Set();
+function balikEkle(kod, giris) {
+  beklenen.add(kod);
+  return dokuYukle(kod).then(t => {
+    beklenen.delete(kod);
+    if (!t || aktifTurler().has(kod)) return null;
+    const b = new Balik(kod, giris);
+    baliklar.push(b);
+    derinlikSirala();
+    return b;
+  });
+}
+function derinlikSirala() {
+  for (const kap of [katman.uzak, katman.yakin]) {
+    kap.children.sort((a, b) => (a.zIndexOzel || 0) - (b.zIndexOzel || 0));
+  }
+  for (const b of baliklar) b.kap.zIndexOzel = b.z;
+  for (const kap of [katman.uzak, katman.yakin]) kap.children.sort((a, b) => a.zIndexOzel - b.zIndexOzel);
+}
+function nufusYonet(dt) {
+  const kalan = baliklar.filter(b => !b.gidiyor).length + beklenen.size;
+  const N = hedefSayi();
+  if (ilkDolum) {
+    for (let i = kalan; i < N; i++) { const k = yeniTurSec(); if (k) balikEkle(k, 0); }
+    ilkDolum = false;
+    return;
+  }
+  girisBekle -= dt;
+  if (kalan < N && girisBekle <= 0) {
+    const k = yeniTurSec();
+    if (k) balikEkle(k, pick([-1, 1]));
+    girisBekle = rnd(2, 5);
+  }
+  donguSayac -= dt;
+  if (donguSayac <= 0) {
+    donguSayac = rnd(14, 24);
+    const gidebilir = baliklar.filter(b => !b.gidiyor && b.cagrildi < t);
+    if (gidebilir.length > 4) pick(gidebilir).git();
+  }
+  if (kalan > N + 2) {
+    const g = baliklar.filter(b => !b.gidiyor && b.cagrildi < t);
+    if (g.length) pick(g).git();
+  }
+  // Sıradaki birkaç türü önceden yükle (gelince beklemesin)
+  if (Math.random() < dt * 0.3) { const k = yeniTurSec(); if (k) dokuYukle(k); }
+}
+function balikCagir(kod) {
+  const var_ = baliklar.find(b => b.kod === kod && !b.gidiyor);
+  if (var_) {
+    var_.tx = W / 2; var_.ty = H * 0.45; var_.sure = 6; var_.hizlan = 0.5; var_.cagrildi = t + 60;
+    etiket(var_, kod, false);
+    return;
+  }
+  balikEkle(kod, pick([-1, 1])).then(b => {
+    if (!b) return;
+    b.tx = W / 2; b.ty = H * 0.45; b.sure = 8; b.cagrildi = t + 60;
+    etiket(b, kod, false);
+  });
+  // Yer açılsın
+  const g = baliklar.filter(b => !b.gidiyor && b.cagrildi < t);
+  if (g.length) pick(g).git();
+}
+
+// =====================================================================
+//  Kabarcık, yem, etiket, parmakla gezdirme
+// =====================================================================
+const kabarciklar = [];
+const kabarcikKap = new PIXI.Container();
+katman.parca.addChild(kabarcikKap);
+function kabarcik(x, y, r) {
+  if (kabarciklar.length > 260) return;
+  const s = new PIXI.Sprite(kabarcikDoku);
+  s.anchor.set(0.5);
+  s.ozel = { x, y, r, vy: rnd(30, 55) * S, ph: rnd(0, 6) };
+  kabarcikKap.addChild(s);
+  kabarciklar.push(s);
+}
+const taslar = () => [{ x: W * 0.86, y: H * 0.93 }, { x: W * 0.17, y: H * 0.95 }];
+
+const yemler = [];
+const yemKap = new PIXI.Container();
+katman.parca.addChild(yemKap);
+function yemEkle(x, y, olcek, renk, et) {
+  const s = new PIXI.Sprite(yemDoku);
+  s.anchor.set(0.5);
+  s.scale.set(olcek);
+  s.tint = renk;
+  const p = { s, olcek, x, y, vy: rnd(12, 20) * S * (et ? 0.6 : 1), ph: rnd(0, 6), dipte: false, omur: et ? 14 : 10, et, kapan: null };
+  yemKap.addChild(s);
+  yemler.push(p);
+  return p;
+}
+function yemAt(x) {
+  for (let i = 0; i < 8; i++) {
+    yemEkle(clamp(x + rnd(-28, 28) * S, 5, W - 5), H * 0.03 + rnd(-4, 8), S * rnd(0.55, 0.7), pick([0xffffff, 0xffd9a8, 0xe9a46a]), false);
+  }
+  ses.serp();
+}
+function yemSil(p) {
+  const i = yemler.indexOf(p);
+  if (i >= 0) yemler.splice(i, 1);
+  if (!p.s.destroyed) p.s.destroy();
+}
+
+// Yem kapılınca ağız çevresinden saçılan birkaç kırıntı
+const kirintilar = [];
+function kirinti(x, y) {
+  for (let i = 0; i < 4; i++) {
+    const s = new PIXI.Sprite(noktaDoku);
+    s.anchor.set(0.5);
+    s.tint = 0xe8b07a;
+    s.scale.set(S * rnd(0.08, 0.14));
+    s.ozel = { x, y, vx: rnd(-25, 25) * S, vy: rnd(-20, 10) * S, omur: rnd(0.6, 1.1) };
+    yemKap.addChild(s);
+    kirintilar.push(s);
+  }
+}
+
+// =====================================================================
+//  Av ve avcı
+// =====================================================================
+const bulutlar = [];          // av yakalanınca suda dağılan kan bulutu
+const bulutKap = new PIXI.Container();
+katman.parca.addChildAt(bulutKap, 0);
+const yenenler = new Map();   // yenen tür -> geri dönebileceği zaman (fark ettirmeden sonra gelir)
+let avSayac = rnd(25, 45);
+
+function avYakala(avci, av) {
+  const x = av.x, y = av.y;
+  avci.av = null;
+  avci.nabiz = 0.28;
+  avci.tok = rnd(60, 110);
+  avci.doyma = Math.min(1, avci.doyma + clamp(av.w / avci.w, 0.25, 0.6) * 1.4);
+  for (const e of etiketler) if (e.b === av) e.omur = 0;
+  yenenler.set(av.kod, t + rnd(40, 90));
+  const i = baliklar.indexOf(av);
+  if (i >= 0) baliklar.splice(i, 1);
+  av.yokEt();
+  ses.av();
+  for (let k = 0; k < 6; k++) kabarcik(x + rnd(-10, 10) * S, y + rnd(-6, 6) * S, rnd(2, 4) * S);
+  if (!ayar.kan) return;
+  // Kan bulutu: suda yavaşça yayılıp kaybolur
+  const n = Math.round(clamp(av.w / (10 * S), 7, 16));
+  for (let k = 0; k < n; k++) {
+    const s = new PIXI.Sprite(noktaDoku);
+    s.anchor.set(0.5);
+    s.tint = pick([0x7a0c0c, 0x8e1414, 0x6a0a12]);
+    const r0 = Math.max(av.h * rnd(0.4, 0.8), rnd(10, 18) * S);
+    s.ozel = { x: x + rnd(-0.4, 0.4) * av.w, y: y + rnd(-0.3, 0.3) * av.h, r: r0, vr: r0 * rnd(0.6, 1.2), vx: rnd(-6, 6) * S + av.vx * 0.15, vy: rnd(-4, 6) * S, a: rnd(0.28, 0.45), omur: rnd(4, 7), yas: 0 };
+    bulutKap.addChild(s);
+    bulutlar.push(s);
+  }
+  // Artık parçalar: yavaşça batar, başka balıklar kapıp yer
+  const parca = Math.round(clamp(av.w / (25 * S), 2, 6));
+  for (let k = 0; k < parca; k++) {
+    const p = yemEkle(x + rnd(-0.4, 0.4) * av.w, y + rnd(-0.2, 0.2) * av.h, S * rnd(0.45, 0.75), pick([0xd98b7e, 0xc96a5e, 0xe8b0a0]), true);
+    p.s.rotation = rnd(0, 6);
+  }
+}
+
+function avYonet(dt) {
+  avSayac -= dt;
+  if (avSayac > 0) return;
+  avSayac = rnd(4, 8); // uygun eş bulunamazsa kısa süre sonra yeniden dener
+  const ekranda = b => !b.gidiyor && !b.olu && b.x > 0 && b.x < W && b.y > 0 && b.y < H;
+  const etikette = new Set(etiketler.map(e => e.b));
+  const adaylar = [];
+  for (const a of baliklar) {
+    if (!a.avci || a.av || a.tok > 0 || !ekranda(a)) continue;
+    const menzil = (a.avci === "pusu" ? 130 : 420) * S;
+    for (const b of baliklar) {
+      if (b === a || !ekranda(b) || b.kovalayan || KORUNAKLI.has(b.kod) || b.cagrildi > t || etikette.has(b)) continue;
+      if (b.w > a.w * 0.45) continue;             // ağzına sığmalı
+      if (Math.abs(b.z - a.z) > 0.2) continue;    // aynı derinlikte olmalı
+      const d = Math.hypot(b.x - a.x, b.y - a.y);
+      if (d < menzil) adaylar.push([a, b, d]);
+    }
+  }
+  if (!adaylar.length) return;
+  adaylar.sort((p, q) => p[2] - q[2]);
+  const [a, b] = adaylar[0];
+  a.av = b; a.avSure = a.avci === "pusu" ? 1.2 : rnd(4, 6.5);
+  b.kovalayan = a;
+  avSayac = rnd(45, 90); // avlar seyrek olsun, akvaryum huzurlu kalsın
+}
+
+const etiketler = [];
+function etiket(b, kod, yeni) {
+  for (const e of etiketler.filter(e => e.b === b)) e.omur = 0;
+  const kap = new PIXI.Container();
+  const font = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+  const yazi_ = new PIXI.Text(yeni ? "Yeni!  " + adi(kod) : adi(kod), {
+    fontFamily: font, fontSize: Math.round(16 + 6 * S), fontWeight: "700", fill: 0x06324f,
+  });
+  const bilim = new PIXI.Text(bilimAdi(kod), {
+    fontFamily: font, fontSize: Math.round(11 + 4 * S), fontStyle: "italic", fill: 0x3a5f72,
+  });
+  for (const y of [yazi_, bilim]) { y.resolution = app.renderer.resolution; y.anchor.set(0.5); }
+  const bosluk = bilim.text ? bilim.height * 0.55 : 0;
+  yazi_.y = -bosluk; bilim.y = yazi_.height * 0.5;
+  const pw = Math.max(yazi_.width, bilim.width) + 30 * Math.max(1, S * 0.8);
+  const ph = yazi_.height + (bilim.text ? bilim.height : 0) + 12 * Math.max(1, S * 0.8);
+  const zemin = new PIXI.Graphics().beginFill(yeni ? 0xffd54a : 0xffffff, 0.92)
+    .drawRoundedRect(-pw / 2, -ph / 2 - bosluk * 0.5, pw, ph, Math.min(ph / 2, 22 * S)).endFill();
+  kap.addChild(zemin, yazi_);
+  if (bilim.text) kap.addChild(bilim); else bilim.destroy();
+  etiketKatman.addChild(kap);
+  etiketler.push({ b, kap, omur: yeni ? 4 : 3 });
+}
+
+let yem_tutucu = null; // parmak basılıyken balıkları çeken nokta
+let basili = false;
+const parmakHalka = new PIXI.Sprite(noktaDoku);
+parmakHalka.anchor.set(0.5);
+parmakHalka.blendMode = PIXI.BLEND_MODES.ADD;
+parmakHalka.alpha = 0;
+katman.parca.addChild(parmakHalka);
+
+app.view.addEventListener("pointerdown", e => {
+  basili = true;
+  ses.ac();
+  ekranUyanik();
+  aracGoster();
+  const x = e.clientX, y = e.clientY;
+  // Önde olan (yakın) balık önce
+  const sirali = baliklar.slice().sort((a, b) => b.z - a.z);
+  let balikVar = false;
+  for (const b of sirali) {
+    if (b.gidiyor || !b.vurdu(x, y)) continue;
+    balikVar = true;
+    const yeni = !kesif.has(b.kod);
+    if (yeni) { kesif.add(b.kod); kayit.yaz("kesif", [...kesif]); }
+    etiket(b, b.kod, yeni);
+    ses.zil(yeni);
+    // Olduğu derinlikte irkilir ve kısa bir kaçış yapar (yüzeye çıkmaz, yem de düşmez)
+    b.irkil = 0.5;
+    b.tx = clamp(b.x + (b.x > x ? 1 : -1) * rnd(110, 170) * S, b.w * 0.5, W - b.w * 0.5);
+    b.ty = b.y;
+    b.sure = rnd(3, 5);
+    b.dinlen = rnd(1, 2);
+    b.hizlan = 0.35;
+    break;
+  }
+  if (!balikVar) {
+    yemAt(x);
+    yem_tutucu = { x, y };
+  } else {
+    basili = false; // balığa dokunuşta parmak takibi başlamasın
+  }
+  document.getElementById("ipucu").style.opacity = 0;
+});
+app.view.addEventListener("pointermove", e => {
+  if (basili) yem_tutucu = { x: e.clientX, y: e.clientY };
+  else aracGoster();
+});
+const birak = () => { basili = false; yem_tutucu = null; };
+for (const ev of ["pointerup", "pointercancel", "pointerleave"]) app.view.addEventListener(ev, birak);
+document.addEventListener("gesturestart", e => e.preventDefault());
+
+// =====================================================================
+//  Ses (dosya yok, Web Audio ile üretilir)
+// =====================================================================
+const ses = {
+  c: null, ana: null, acik: kayit.oku("ses", true),
+  ac() {
+    muzik.ac();
+    if (this.c) { if (this.c.state === "suspended") this.c.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    this.c = new AC();
+    this.ana = this.c.createGain();
+    this.ana.gain.value = this.acik ? 1 : 0;
+    this.ana.connect(this.c.destination);
+    // Hafif su uğultusu: süzülmüş kahverengi gürültü
+    const n = this.c.sampleRate * 4, buf = this.c.createBuffer(1, n, this.c.sampleRate), d = buf.getChannelData(0);
+    let son = 0;
+    for (let i = 0; i < n; i++) { son = (son + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = son * 3.5; }
+    const kaynak = this.c.createBufferSource();
+    kaynak.buffer = buf; kaynak.loop = true;
+    const lp = this.c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 420;
+    const g = this.c.createGain(); g.gain.value = 0.16;
+    kaynak.connect(lp).connect(g).connect(this.ana);
+    kaynak.start();
+  },
+  bip(f0, f1, sure, ses_, tip = "sine", gecikme = 0) {
+    if (!this.c || !this.acik) return;
+    const t0 = this.c.currentTime + gecikme;
+    const o = this.c.createOscillator(), g = this.c.createGain();
+    o.type = tip;
+    o.frequency.setValueAtTime(f0, t0);
+    o.frequency.exponentialRampToValueAtTime(f1, t0 + sure);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(ses_, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + sure + 0.06);
+    o.connect(g).connect(this.ana);
+    o.start(t0); o.stop(t0 + sure + 0.1);
+  },
+  blup() { this.bip(rnd(260, 420), rnd(700, 1200), rnd(0.05, 0.09), 0.012); },
+  yudum() { this.bip(220, 520, 0.07, 0.04); },
+  av() { this.bip(140, 70, 0.18, 0.08); this.bip(300, 900, 0.08, 0.02, "sine", 0.12); },
+  serp() { for (let i = 0; i < 4; i++) this.bip(rnd(900, 1300), rnd(500, 700), 0.05, 0.012, "sine", i * 0.04); },
+  zil(yeni) {
+    const notalar = yeni ? [784, 988, 1175, 1568] : [880];
+    notalar.forEach((f, i) => this.bip(f, f * 1.001, 0.25, yeni ? 0.05 : 0.035, "triangle", i * 0.09));
+  },
+  degistir() {
+    this.acik = !this.acik;
+    kayit.yaz("ses", this.acik);
+    if (this.ana) this.ana.gain.value = this.acik ? 1 : 0;
+    sesDugme.textContent = this.acik ? "🔊" : "🔇";
+    muzik.guncelle();
+  },
+};
+
+// Dinlendirici piyano: kamu malı kayıtlar (muzik/liste.js), karışık sırayla, yumuşak geçişle
+const muzik = {
+  ses: null, sira: [], i: 0, hedef: 0, duzey: 0, baslatildi: false,
+  hazirla() {
+    if (this.ses || !(window.MUZIK && MUZIK.length)) return;
+    this.ses = new Audio();
+    this.ses.preload = "auto";
+    this.ses.volume = 0;
+    this.ses.addEventListener("ended", () => this.sonraki());
+    this.ses.addEventListener("error", () => setTimeout(() => this.sonraki(), 1000));
+    this.sira = MUZIK.map((_, k) => k).sort(() => Math.random() - 0.5);
+    this.i = 0;
+    this.ses.src = `muzik/${MUZIK[this.sira[0]].kod}.m4a`;
+  },
+  sonraki() {
+    if (!this.ses) return;
+    this.i = (this.i + 1) % this.sira.length;
+    this.ses.src = `muzik/${MUZIK[this.sira[this.i]].kod}.m4a`;
+    if (this.calsin()) this.ses.play().catch(() => {});
+  },
+  calsin() { return ses.acik && ayar.muzik; },
+  // Kullanıcı dokunuşu içinde çağrılmalı (iPad/iPhone sesi ancak dokunuşla başlatır)
+  ac() {
+    this.hazirla();
+    if (!this.ses) return;
+    this.baslatildi = true;
+    this.guncelle();
+  },
+  guncelle() {
+    if (!this.ses || !this.baslatildi) return;
+    this.hedef = this.calsin() ? 0.38 : 0;
+    if (this.hedef > 0 && this.ses.paused) this.ses.play().catch(() => {});
+  },
+  // Her karede: sesi yavaşça aç/kapat (ani başlamasın)
+  adim(dt) {
+    if (!this.ses) return;
+    this.duzey = lerp(this.duzey, this.hedef, Math.min(1, dt * 0.8));
+    try { this.ses.volume = clamp(this.duzey, 0, 1); } catch (e) {}
+    if (this.hedef === 0 && this.duzey < 0.01 && !this.ses.paused) this.ses.pause();
+  },
+};
+
+// =====================================================================
+//  Gece modu, tam ekran, araç çubuğu, ekranın kapanmaması
+// =====================================================================
+const gece = { acik: kayit.oku("gece", false), k: 0 };
+gece.k = gece.acik ? 1 : 0;
+
+const arac = document.getElementById("arac");
+const sesDugme = document.getElementById("sesDugme");
+const geceDugme = document.getElementById("geceDugme");
+sesDugme.textContent = ses.acik ? "🔊" : "🔇";
+geceDugme.textContent = gece.acik ? "☀️" : "🌙";
+let aracZaman = 0;
+function aracGoster() { arac.classList.remove("gizli"); aracZaman = 6; }
+aracGoster();
+
+sesDugme.onclick = () => { ses.ac(); ses.degistir(); };
+geceDugme.onclick = () => {
+  gece.acik = !gece.acik;
+  kayit.yaz("gece", gece.acik);
+  geceDugme.textContent = gece.acik ? "☀️" : "🌙";
+};
+
+const tamEkranDugme = document.getElementById("tamEkranDugme");
+const de = document.documentElement;
+const tamEkranVar = !!(de.requestFullscreen || de.webkitRequestFullscreen);
+const uygulamaModu = navigator.standalone || matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches;
+if (!tamEkranVar || uygulamaModu) tamEkranDugme.style.display = "none";
+function tamEkran() {
+  const el = document.fullscreenElement || document.webkitFullscreenElement;
+  if (el) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  else (de.requestFullscreen || de.webkitRequestFullscreen).call(de);
+}
+tamEkranDugme.onclick = tamEkran;
+
+let uyanik = null;
+async function ekranUyanik() {
+  try { if ("wakeLock" in navigator && !uyanik) { uyanik = await navigator.wakeLock.request("screen"); uyanik.addEventListener("release", () => (uyanik = null)); } } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") ekranUyanik(); });
+
+// TV kumandası ve klavye
+document.addEventListener("keydown", e => {
+  ses.ac(); ekranUyanik(); aracGoster();
+  if (rehber.classList.contains("acik")) {
+    if (e.key === "Escape" || e.key === "Backspace" || e.key === "r" || e.key === "R") { rehberKapat(); e.preventDefault(); }
+    return;
+  }
+  const k = e.key.toLowerCase();
+  if (k === "enter" || k === " ") { if (document.activeElement && document.activeElement.tagName === "BUTTON") return; yemAt(rnd(0.15, 0.85) * W); e.preventDefault(); }
+  else if (k === "f") tamEkran();
+  else if (k === "n") geceDugme.onclick();
+  else if (k === "m") sesDugme.onclick();
+  else if (k === "r") rehberAc();
+});
+
+// =====================================================================
+//  Balık rehberi
+// =====================================================================
+const rehber = document.getElementById("rehber");
+const kartlar = document.getElementById("kartlar");
+function rehberAc() {
+  kartlar.innerHTML = "";
+  const sirali = KODLAR.slice().sort((a, b) => (kesif.has(b) - kesif.has(a)) || adi(a).localeCompare(adi(b), "tr"));
+  for (const kod of sirali) {
+    const bilinen = kesif.has(kod);
+    const k = document.createElement("button");
+    k.className = "kart" + (bilinen ? "" : " gizli");
+    k.innerHTML = `<img loading="lazy" alt=""><span></span><i></i>`;
+    k.querySelector("img").src = `img/balik/${kod}.webp`;
+    k.querySelector("span").textContent = bilinen ? adi(kod) : "?";
+    k.querySelector("i").textContent = bilinen ? bilimAdi(kod) : "";
+    k.onclick = () => {
+      if (!bilinen) { k.animate([{ transform: "translateX(-6px)" }, { transform: "translateX(6px)" }, { transform: "none" }], 250); return; }
+      rehberKapat();
+      balikCagir(kod);
+    };
+    kartlar.appendChild(k);
+  }
+  document.getElementById("sayac").textContent = `${kesif.size} / ${KODLAR.length}`;
+  rehber.classList.add("acik");
+  rehber.scrollTop = 0;
+  const ilk = kartlar.querySelector(".kart");
+  if (ilk) ilk.focus();
+}
+function rehberKapat() { rehber.classList.remove("acik"); }
+
+// Ayar düğmeleri
+function ayarDugme(id, anahtar, yazi) {
+  const d = document.getElementById(id);
+  const yaz = () => { d.textContent = `${yazi}: ${ayar[anahtar] ? "açık" : "kapalı"}`; d.classList.toggle("acik", ayar[anahtar]); };
+  d.onclick = () => {
+    ayar[anahtar] = !ayar[anahtar];
+    kayit.yaz(anahtar, ayar[anahtar]);
+    yaz();
+    if (anahtar === "muzik") { ses.ac(); muzik.guncelle(); }
+  };
+  yaz();
+}
+ayarDugme("muzikAyar", "muzik", "🎵 Piyano müziği");
+ayarDugme("kanAyar", "kan", "🩸 Gerçekçi av");
+document.getElementById("rehberDugme").onclick = () => { ses.ac(); rehberAc(); };
+document.getElementById("kapat").onclick = rehberKapat;
+
+// Kaynak listesi
+(() => {
+  const liste = document.getElementById("kaynakListe");
+  const ekle = (baslik, k) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<b></b> — <span></span> · <span></span><br><a target="_blank" rel="noopener"></a>`;
+    li.querySelector("b").textContent = baslik;
+    const sp = li.querySelectorAll("span");
+    sp[0].textContent = k.yazar; sp[1].textContent = k.lisans + (k.not ? " · " + k.not : "");
+    const a = li.querySelector("a"); a.href = k.sayfa; a.textContent = k.dosya;
+    liste.appendChild(li);
+  };
+  if (window.ARKAPLAN_KAYNAK) ekle("Akvaryum (arka plan)", ARKAPLAN_KAYNAK);
+  for (const m of (window.MUZIK || [])) ekle(`Müzik: ${m.besteci} — ${m.ad}`, { yazar: m.yorumcu, lisans: m.lisans, sayfa: m.sayfa, dosya: m.dosya });
+  for (const kod of KODLAR) ekle(adi(kod) + (bilimAdi(kod) ? ` (${bilimAdi(kod)})` : ""), KAYNAKLAR[kod]);
+  const pl = document.createElement("li");
+  pl.textContent = "Çizim: PixiJS 7.4.2 (MIT lisansı).";
+  liste.appendChild(pl);
+})();
+
+// =====================================================================
+//  Ana döngü
+// =====================================================================
+let t = 0;
+// Kendiliğinden kalite ayarı: yavaşsa çözünürlüğü ve efektleri azalt
+const fps = { toplam: 0, sayi: 0, sure: 0, dusuk: 0 };
+function kaliteDenetle() {
+  const ms = app.ticker.deltaMS;
+  // Sekme arka plandaysa tarayıcı yavaşlatır; bunu cihaz yavaşlığı sanma
+  if (document.visibilityState !== "visible" || ms > 250) { fps.toplam = 0; fps.sayi = 0; fps.dusuk = 0; return; }
+  fps.toplam += ms / 1000; fps.sayi++;
+  if (fps.toplam < 2) return;
+  const ort = fps.sayi / fps.toplam;
+  fps.toplam = 0; fps.sayi = 0;
+  if (ort < 36) {
+    fps.dusuk++;
+    if (fps.dusuk >= 2) {
+      fps.dusuk = 0;
+      if (kalite > 1) {
+        kalite = Math.max(1, Math.round(kalite * 0.75 * 100) / 100);
+        kayit.yaz("kalite", kalite);
+        app.renderer.resolution = kalite;
+        app.renderer.resize(window.innerWidth, window.innerHeight);
+        yerlestir();
+      }
+    }
+  } else fps.dusuk = 0;
+}
+
+app.ticker.add(() => {
+  const dt = Math.min(0.05, app.ticker.deltaMS / 1000);
+  t += dt;
+  kaliteDenetle();
+
+  // Arka plan çok yavaş süzülür (kamera nefes alıyor gibi)
+  arkaplan.position.set(W / 2 + Math.sin(t * 0.03) * W * 0.012, H / 2 + Math.cos(t * 0.023) * H * 0.008);
+
+  // Işık oyunları
+  const isikGucu = 1 - gece.k * 0.85;
+  kostikShader.uniforms.uZaman = t;
+  kostikShader.uniforms.uGuc = (0.11 + Math.sin(t * 0.7) * 0.02) * isikGucu;
+  const hz = kostikShader.uniforms.uHuzme;
+  huzmeler.forEach((o, i) => {
+    hz[i * 4] = o.x + Math.sin(t * o.s + o.p) * 0.03;
+    hz[i * 4 + 1] = o.w;
+    hz[i * 4 + 2] = o.a * (0.55 + 0.45 * Math.sin(t * o.s * 2 + o.p)) * isikGucu;
+    hz[i * 4 + 3] = o.egim + Math.sin(t * o.s * 0.7 + o.p) * 0.03;
+  });
+
+  // Gece
+  gece.k = lerp(gece.k, gece.acik ? 1 : 0, Math.min(1, dt * 1.5));
+  kostikShader.uniforms.uGece = gece.k;
+  app.renderer.render(kostik, { renderTexture: isikRT, clear: true });
+
+  // Parçacıklar
+  for (const p of parcaciklar) {
+    const o = p.ozel;
+    o.x = (o.x + (o.vx + Math.sin(t * 0.3 + o.ph) * 0.002) * dt + 1) % 1;
+    o.y = (o.y + (o.vy + Math.cos(t * 0.25 + o.ph) * 0.001) * dt + 1) % 1;
+    p.x = o.x * W; p.y = o.y * H;
+    p.scale.set((0.06 + o.z * 0.12) * S * (1 + gece.k * 0.6));
+    const parilti = gece.k * (0.5 + 0.5 * Math.sin(t * 2 + o.ph * 3));
+    p.alpha = (0.18 + o.z * 0.3) * (1 - gece.k) + parilti * 0.9;
+  }
+  parcacikKap.tint = gece.k > 0.5 ? 0x9affe6 : 0xffffff;
+
+  // Hava taşı kabarcıkları ve rastgele kabarcık sesleri
+  for (const s of taslar()) if (Math.random() < dt * 8) kabarcik(s.x + rnd(-6, 6) * S, s.y, rnd(2, 5) * S);
+  if (Math.random() < dt * 0.6) ses.blup();
+  for (let i = kabarciklar.length - 1; i >= 0; i--) {
+    const s = kabarciklar[i], o = s.ozel;
+    o.y -= o.vy * dt;
+    o.x += Math.sin(t * 3 + o.ph) * 14 * S * dt;
+    o.r += dt * 0.5 * S;
+    s.position.set(o.x, o.y);
+    s.scale.set(o.r * 2 / 64);
+    s.alpha = clamp(o.y / (H * 0.08), 0, 1) * 0.9;
+    if (o.y < H * 0.01) { s.destroy(); kabarciklar.splice(i, 1); }
+  }
+
+  // Yem
+  for (let i = yemler.length - 1; i >= 0; i--) {
+    const p = yemler[i];
+    if (p.kapan) {
+      // Bir balık ağzına çekiyor; konumunu balık belirler
+      if (p.kapan.olu) p.kapan = null;
+    } else if (!p.dipte) {
+      p.y += p.vy * dt;
+      p.x += Math.sin(t * 2 + p.ph) * 10 * S * dt;
+      p.s.rotation += dt * (p.et ? 0.4 : 1);
+      if (p.y >= ZEMIN()) { p.y = ZEMIN(); p.dipte = true; }
+    } else {
+      p.omur -= dt;
+      if (p.omur <= 0) { yemler.splice(i, 1); p.s.destroy(); continue; }
+    }
+    p.s.position.set(p.x, p.y);
+    p.s.alpha = Math.min(1, p.omur / 2);
+  }
+  for (let i = kirintilar.length - 1; i >= 0; i--) {
+    const s = kirintilar[i], o = s.ozel;
+    o.omur -= dt;
+    o.x += o.vx * dt; o.y += o.vy * dt; o.vy += 12 * S * dt; o.vx *= 0.96;
+    s.position.set(o.x, o.y);
+    s.alpha = clamp(o.omur, 0, 1);
+    if (o.omur <= 0) { s.destroy(); kirintilar.splice(i, 1); }
+  }
+  // Kan bulutu yavaşça genişler, sürüklenir ve söner
+  for (let i = bulutlar.length - 1; i >= 0; i--) {
+    const s = bulutlar[i], o = s.ozel;
+    o.yas += dt;
+    o.r += o.vr * dt * Math.max(0.15, 1 - o.yas / o.omur);
+    o.x += o.vx * dt; o.y += o.vy * dt; o.vx *= 0.99;
+    s.position.set(o.x, o.y);
+    s.scale.set(o.r * 2 / 32);
+    s.alpha = o.a * Math.max(0, 1 - o.yas / o.omur) * (1 - gece.k * 0.5);
+    if (o.yas >= o.omur) { s.destroy(); bulutlar.splice(i, 1); }
+  }
+
+  // Balıklar
+  nufusYonet(dt);
+  avYonet(dt);
+  for (const b of baliklar.slice()) {
+    if (b.olu) continue;
+    if (!b.guncelle(dt)) { b.yokEt(); baliklar.splice(baliklar.indexOf(b), 1); continue; }
+    if (!b.olu) b.ciz();
+  }
+  muzik.adim(dt);
+
+  // Etiketler
+  for (let i = etiketler.length - 1; i >= 0; i--) {
+    const e = etiketler[i];
+    e.omur -= dt;
+    if (e.omur <= 0 || e.b.kap.destroyed) { e.kap.destroy({ children: true }); etiketler.splice(i, 1); continue; }
+    e.kap.position.set(clamp(e.b.x, 90 * S, W - 90 * S), Math.max(30 * S, e.b.y - e.b.h * 0.6 - 22 * S));
+    e.kap.alpha = Math.min(1, e.omur * 2);
+  }
+
+  // Parmak halkası
+  parmakHalka.alpha = lerp(parmakHalka.alpha, yem_tutucu ? 0.35 : 0, Math.min(1, dt * 6));
+  if (yem_tutucu) { parmakHalka.position.set(yem_tutucu.x, yem_tutucu.y); parmakHalka.scale.set(3 * S * (1 + 0.1 * Math.sin(t * 6))); }
+
+  // Araç çubuğu bir süre dokunulmazsa gizlenir (TV'de sadece akvaryum görünsün)
+  aracZaman -= dt;
+  if (aracZaman < 0 && !rehber.classList.contains("acik")) arac.classList.add("gizli");
+});
+
+setTimeout(() => { document.getElementById("ipucu").style.opacity = 1; }, 1500);
+setTimeout(() => { document.getElementById("ipucu").style.opacity = 0; }, 9000);
+</script>
+</body>
+</html>
