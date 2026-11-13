@@ -39,6 +39,12 @@
     display: grid; place-items: center;
   }
   #arac button:focus-visible { outline: 3px solid #ffd54a; outline-offset: 2px; }
+  #arac button { position: relative; }
+  #arac button.kapali { opacity: .75; }
+  #arac button.kapali::after {
+    content: ""; position: absolute; left: 18%; right: 18%; top: 50%; height: 3px;
+    background: #ff5a5a; border-radius: 2px; transform: rotate(-45deg);
+  }
   #arac button svg { width: 55%; height: 55%; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; }
   #rehber {
     position: fixed; inset: 0; display: none; background: rgba(2, 20, 35, .95); color: #e8f4f8;
@@ -84,6 +90,7 @@
 
 <div id="arac">
   <button id="rehberDugme" title="Balık rehberi (R)" aria-label="Balık rehberi">📖</button>
+  <button id="avDugme" title="Avlanma aç/kapa (A)" aria-label="Avlanma">🦈</button>
   <button id="geceDugme" title="Gece / gündüz (N)" aria-label="Gece modu">🌙</button>
   <button id="sesDugme" title="Ses (M)" aria-label="Ses">🔊</button>
   <button id="tamEkranDugme" title="Tam ekran (F)" aria-label="Tam ekran">
@@ -105,9 +112,10 @@
   <p class="alt">Gerçekçi av: avcı balıklar ağızlarına sığan küçük balıkları yakalar; suda bir kan bulutu dağılır,
      kalan parçaları başka balıklar yer. Kapatınca av yine olur ama kan ve parça görünmez.</p>
   <h3>Bilgiler</h3>
-  <p class="alt">Tam ekran: sağ üstteki düğme ya da F tuşu. iPad/iPhone'da Safari'de <b>Paylaş → Ana Ekrana Ekle</b>,
-     Android'de Chrome menüsünden <b>Ana ekrana ekle</b> ile uygulama gibi tam ekran açılır.
-     TV kumandası: OK/Enter yem atar, R rehber, N gece, M ses, F tam ekran.</p>
+  <p class="alt">Tam ekran: ekrana hızlıca iki kez dokun (çıkmak için yine iki kez), sağ üstteki düğme ya da F tuşu.
+     iPad/iPhone'da Safari'de <b>Paylaş → Ana Ekrana Ekle</b>, Android'de Chrome menüsünden <b>Ana ekrana ekle</b>
+     ile uygulama gibi tam ekran açılır. 🦈 düğmesi avlanmayı açar/kapatır.
+     TV kumandası: OK/Enter yem atar, R rehber, A avlanma, N gece, M ses, F tam ekran.</p>
   <h3>Fotoğraf kaynakları</h3>
   <p class="alt">Balıkların ve akvaryumun hepsi gerçek fotoğraftır (Wikimedia Commons). Balıkların zeminleri silinip
      yüzecek şekilde hareketlendirildi; arka plandaki fotoğraftan birkaç hareketsiz balık silindi.</p>
@@ -214,6 +222,7 @@ const tur = kod => Object.assign({}, VARSAYILAN, AYAR[kod] || {});
 const adi = kod => (window.KAYNAKLAR && KAYNAKLAR[kod]) ? KAYNAKLAR[kod].ad : kod;
 const bilimAdi = kod => (window.KAYNAKLAR && KAYNAKLAR[kod] && KAYNAKLAR[kod].bilim) || "";
 const ayar = {
+  av: kayit.oku("av", true),     // avcılar küçük balıkları avlasın mı
   muzik: kayit.oku("muzik", true),
   kan: kayit.oku("kan", true),   // gerçekçi av: kan bulutu ve artık parçalar
 };
@@ -766,11 +775,11 @@ function balikCagir(kod) {
 const kabarciklar = [];
 const kabarcikKap = new PIXI.Container();
 katman.parca.addChild(kabarcikKap);
-function kabarcik(x, y, r) {
-  if (kabarciklar.length > 260) return;
+function kabarcik(x, y, r, tas = false) {
+  if (kabarciklar.length > 200) return;
   const s = new PIXI.Sprite(kabarcikDoku);
   s.anchor.set(0.5);
-  s.ozel = { x, y, r, vy: rnd(30, 55) * S, ph: rnd(0, 6) };
+  s.ozel = { x, y, r, vy: rnd(30, 55) * S, ph: rnd(0, 6), tas, buyume: tas ? 0.25 : 0.5, saydam: tas ? 0.6 : 0.9 };
   kabarcikKap.addChild(s);
   kabarciklar.push(s);
 }
@@ -858,6 +867,7 @@ function avYakala(avci, av) {
 }
 
 function avYonet(dt) {
+  if (!ayar.av) return;
   avSayac -= dt;
   if (avSayac > 0) return;
   avSayac = rnd(4, 8); // uygun eş bulunamazsa kısa süre sonra yeniden dener
@@ -921,6 +931,18 @@ app.view.addEventListener("pointerdown", e => {
   ekranUyanik();
   aracGoster();
   const x = e.clientX, y = e.clientY;
+  // Hızlı ikinci dokunuş: tam ekrana gir/çık (yem atmaz, balığa dokunmaz).
+  // Geçiş parmak kalkınca yapılır; tarayıcılar tam ekrana yalnızca o anda izin veriyor.
+  const simdi = performance.now();
+  if (simdi - sonDokunus.t < 350 && Math.hypot(x - sonDokunus.x, y - sonDokunus.y) < 60) {
+    ciftDokunus = true;
+    basili = false;
+    yem_tutucu = null;
+    sonDokunus.t = 0;
+    clearTimeout(yemZamani); // ilk dokunuşun yemi hiç düşmesin
+    return;
+  }
+  sonDokunus = { t: simdi, x, y };
   // Önde olan (yakın) balık önce
   const sirali = baliklar.slice().sort((a, b) => b.z - a.z);
   let balikVar = false;
@@ -941,7 +963,9 @@ app.view.addEventListener("pointerdown", e => {
     break;
   }
   if (!balikVar) {
-    yemAt(x);
+    // Yem kısa bir an sonra düşer: bu arada ikinci dokunuş gelirse (tam ekran) iptal edilir
+    clearTimeout(yemZamani);
+    yemZamani = setTimeout(() => yemAt(x), 260);
     yem_tutucu = { x, y };
   } else {
     basili = false; // balığa dokunuşta parmak takibi başlamasın
@@ -954,6 +978,12 @@ app.view.addEventListener("pointermove", e => {
 });
 const birak = () => { basili = false; yem_tutucu = null; };
 for (const ev of ["pointerup", "pointercancel", "pointerleave"]) app.view.addEventListener(ev, birak);
+let sonDokunus = { t: 0, x: 0, y: 0 }, ciftDokunus = false, yemZamani = 0;
+app.view.addEventListener("pointerup", () => {
+  if (!ciftDokunus) return;
+  ciftDokunus = false;
+  if (tamEkranVar) tamEkran();
+});
 document.addEventListener("gesturestart", e => e.preventDefault());
 
 // =====================================================================
@@ -1104,6 +1134,7 @@ document.addEventListener("keydown", e => {
   if (k === "enter" || k === " ") { if (document.activeElement && document.activeElement.tagName === "BUTTON") return; yemAt(rnd(0.15, 0.85) * W); e.preventDefault(); }
   else if (k === "f") tamEkran();
   else if (k === "n") geceDugme.onclick();
+  else if (k === "a") avDugme.onclick();
   else if (k === "m") sesDugme.onclick();
   else if (k === "r") rehberAc();
 });
@@ -1152,6 +1183,24 @@ function ayarDugme(id, anahtar, yazi) {
   yaz();
 }
 ayarDugme("muzikAyar", "muzik", "🎵 Piyano müziği");
+
+// Araç çubuğundaki avlanma düğmesi
+const avDugme = document.getElementById("avDugme");
+function avDugmeYaz() {
+  avDugme.classList.toggle("kapali", !ayar.av);
+  avDugme.title = ayar.av ? "Avlanma açık (kapatmak için dokun)" : "Avlanma kapalı (açmak için dokun)";
+}
+avDugme.onclick = () => {
+  ayar.av = !ayar.av;
+  kayit.yaz("av", ayar.av);
+  if (!ayar.av) {
+    // Süren kovalamacaları bırak
+    for (const b of baliklar) { if (b.av) { b.av.kovalayan = null; b.av = null; } }
+  }
+  avDugmeYaz();
+  aracGoster();
+};
+avDugmeYaz();
 ayarDugme("kanAyar", "kan", "🩸 Gerçekçi av");
 document.getElementById("rehberDugme").onclick = () => { ses.ac(); rehberAc(); };
 document.getElementById("kapat").onclick = rehberKapat;
@@ -1243,16 +1292,17 @@ app.ticker.add(() => {
   parcacikKap.tint = gece.k > 0.5 ? 0x9affe6 : 0xffffff;
 
   // Hava taşı kabarcıkları ve rastgele kabarcık sesleri
-  for (const s of taslar()) if (Math.random() < dt * 8) kabarcik(s.x + rnd(-6, 6) * S, s.y, rnd(2, 5) * S);
+  // Hava taşı: seyrek ve ince bir kabarcık sütunu (dik telefon ekranında da göze batmasın)
+  for (const s of taslar()) if (Math.random() < dt * 2.5) kabarcik(s.x + rnd(-5, 5) * S, s.y, rnd(1.2, 3) * S, true);
   if (Math.random() < dt * 0.6) ses.blup();
   for (let i = kabarciklar.length - 1; i >= 0; i--) {
     const s = kabarciklar[i], o = s.ozel;
     o.y -= o.vy * dt;
     o.x += Math.sin(t * 3 + o.ph) * 14 * S * dt;
-    o.r += dt * 0.5 * S;
+    o.r += dt * o.buyume * S;
     s.position.set(o.x, o.y);
     s.scale.set(o.r * 2 / 64);
-    s.alpha = clamp(o.y / (H * 0.08), 0, 1) * 0.9;
+    s.alpha = clamp(o.y / (H * 0.08), 0, 1) * o.saydam;
     if (o.y < H * 0.01) { s.destroy(); kabarciklar.splice(i, 1); }
   }
 
