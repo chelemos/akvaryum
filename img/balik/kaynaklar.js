@@ -1024,6 +1024,132 @@ window.KAYNAKLAR = {
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Chromis cyanea",
   "tr": ""
+ },
+ "ev_japon": {
+  "ad": "Goldfish",
+  "tr": "Japon balığı",
+  "bilim": "Carassius auratus",
+  "dosya": "Carassius wild golden fish 2013 G1.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Carassius_wild_golden_fish_2013_G1.jpg",
+  "lisans": "Public domain",
+  "yazar": "George Chernilevsky"
+ },
+ "ev_saritang": {
+  "ad": "Yellow tang",
+  "tr": "Sarı cerrah balığı",
+  "bilim": "Zebrasoma flavescens",
+  "dosya": "Zebrasoma flavescens Luc Viatour.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Zebrasoma_flavescens_Luc_Viatour.jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Luc Viatour"
+ },
+ "ev_dori": {
+  "ad": "Blue tang",
+  "tr": "Mavi cerrah balığı (Dori)",
+  "bilim": "Paracanthurus hepatus",
+  "dosya": "Paracanthurus-hepatus-paletten-doktorfisch.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Paracanthurus-hepatus-paletten-doktorfisch.jpg",
+  "lisans": "CC BY 3.0",
+  "yazar": "Holger Krisp"
+ },
+ "ev_diskus_mavi": {
+  "ad": "Blue discus",
+  "tr": "Diskus",
+  "bilim": "Symphysodon aequifasciatus",
+  "dosya": "Blue Discus fish Symphysodon aequifasciatus.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Blue_Discus_fish_Symphysodon_aequifasciatus.jpg",
+  "lisans": "CC BY 2.0",
+  "yazar": "Brian Gratwicke"
+ },
+ "ev_diskus_turuncu": {
+  "ad": "Orange discus",
+  "tr": "Diskus",
+  "bilim": "Symphysodon aequifasciatus",
+  "dosya": "Orange Discus fish Symphysodon aequifasciatus.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Orange_Discus_fish_Symphysodon_aequifasciatus.jpg",
+  "lisans": "CC BY 2.0",
+  "yazar": "Brian Gratwicke"
+ },
+ "ev_kaplan": {
+  "ad": "Tiger barb",
+  "tr": "Kaplan barbusu",
+  "bilim": "Puntius tetrazona",
+  "dosya": "A Male Tiger barb.png",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:A_Male_Tiger_barb.png",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Anandarajkumar (talk) (Uploads)"
+ },
+ "ev_ruhsuz": {
+  "ad": "Rummy-nose tetra",
+  "tr": "Kırmızı burunlu tetra",
+  "bilim": "Hemigrammus bleheri",
+  "dosya": "Petitella bleheri (Hemigrammus bleheri).jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Petitella_bleheri_(Hemigrammus_bleheri).jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Soulkeeper"
+ },
+ "ev_siyahneon": {
+  "ad": "Black neon tetra",
+  "tr": "Siyah neon",
+  "bilim": "Hyphessobrycon herbertaxelrodi",
+  "dosya": "Hyphessobrycon herbertaxelrodi.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Hyphessobrycon_herbertaxelrodi.jpg",
+  "lisans": "CC BY-SA 4.0",
+  "yazar": "Luki86"
+ },
+ "ev_neon": {
+  "ad": "Neon tetra",
+  "tr": "Neon balığı",
+  "bilim": "Paracheirodon innesi",
+  "dosya": "NeonTetra.JPG",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:NeonTetra.JPG",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Corpse89"
+ },
+ "ev_beta": {
+  "ad": "Siamese fighting fish",
+  "tr": "Beta balığı",
+  "bilim": "Betta splendens",
+  "dosya": "Bojownik syjamski.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Bojownik_syjamski.jpg",
+  "lisans": "CC BY 4.0",
+  "yazar": "Henryk Niestrój"
+ },
+ "ev_imparator": {
+  "ad": "Emperor angelfish",
+  "tr": "İmparator melek balığı",
+  "bilim": "Pomacanthus imperator",
+  "dosya": "Pez ángel emperador (Pomacanthus imperator), islas Ad Dimaniyat, Omán, 2024-08-15, DD 93.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Pez_%C3%A1ngel_emperador_(Pomacanthus_imperator),_islas_Ad_Dimaniyat,_Om%C3%A1n,_2024-08-15,_DD_93.jpg",
+  "lisans": "CC BY-SA 4.0",
+  "yazar": "Diego Delso"
+ },
+ "ev_ram": {
+  "ad": "Ram cichlid",
+  "tr": "Ram çiklidi",
+  "bilim": "Mikrogeophagus ramirezi",
+  "dosya": "Mikrogeophagus ramirezi (cropped), 2017.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Mikrogeophagus_ramirezi_(cropped),_2017.jpg",
+  "lisans": "Public domain",
+  "yazar": "Eric Mengel"
+ },
+ "ev_gurami": {
+  "ad": "Moonlight gourami",
+  "tr": "Ay ışığı guramisi",
+  "bilim": "Trichopodus microlepis",
+  "dosya": "Trichopodus microlepis - Karlsruhe Zoo 01.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Trichopodus_microlepis_-_Karlsruhe_Zoo_01.jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "H. Zell"
+ },
+ "ev_kardinal": {
+  "ad": "Cardinal tetra",
+  "tr": "Kardinal tetra",
+  "bilim": "Paracheirodon axelrodi",
+  "dosya": "Cardinal Paracheirodon axelrodi (2).jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Cardinal_Paracheirodon_axelrodi_(2).jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "CHUCAO"
  }
 };
 window.ARKAPLAN_KAYNAK = {"dosya": "Reef aquarium at Burgers' Zoo (a).jpg", "sayfa": "https://commons.wikimedia.org/wiki/File:Reef_aquarium_at_Burgers%27_Zoo_(a).jpg", "lisans": "CC BY-SA 4.0", "yazar": "ErikvanB", "not": "Fotoğraftaki birkaç balık silindi (türetilmiş eser, aynı lisansla)."};
