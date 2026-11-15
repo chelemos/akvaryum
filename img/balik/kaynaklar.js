@@ -1150,6 +1150,285 @@ window.KAYNAKLAR = {
   "sayfa": "https://commons.wikimedia.org/wiki/File:Cardinal_Paracheirodon_axelrodi_(2).jpg",
   "lisans": "CC BY-SA 3.0",
   "yazar": "CHUCAO"
+ },
+ "ev_gurami_cuce": {
+  "ad": "Dwarf gourami",
+  "tr": "Cüce gurami",
+  "bilim": "Trichogaster lalius",
+  "dosya": "Colisa lalia - Trichogaster lalius (aka).jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Colisa_lalia_-_Trichogaster_lalius_(aka).jpg",
+  "lisans": "CC BY-SA 2.5",
+  "yazar": "André Karwath aka Aka"
+ },
+ "ev_kiraz": {
+  "ad": "Cherry barb",
+  "tr": "Kiraz barbusu",
+  "bilim": "Puntius titteya",
+  "dosya": "Cherry barb, Puntius titteya.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Cherry_barb,_Puntius_titteya.jpg",
+  "lisans": "CC BY 2.0",
+  "yazar": "Brian Gratwicke"
+ },
+ "ev_gokkusagi": {
+  "ad": "Boeseman's rainbowfish",
+  "tr": "Gökkuşağı balığı",
+  "bilim": "Melanotaenia boesemani",
+  "dosya": "Melanotaenia boesemani - Karlsruhe Zoo 01.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Melanotaenia_boesemani_-_Karlsruhe_Zoo_01.jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "H. Zell"
+ },
+ "ev_japon_adi": {
+  "ad": "Common goldfish",
+  "tr": "Japon balığı",
+  "bilim": "Carassius auratus",
+  "dosya": "Carassius auratus auratus (goldfish) 2.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Carassius_auratus_auratus_(goldfish)_2.jpg",
+  "lisans": "CC BY 2.0",
+  "yazar": "James St. John"
+ },
+ "ev_ryukin": {
+  "ad": "Ryukin goldfish",
+  "tr": "Japon balığı (Ryukin)",
+  "bilim": "Carassius auratus",
+  "dosya": "Yatomi Goldfish Ryukin ac.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Yatomi_Goldfish_Ryukin_ac.jpg",
+  "lisans": "CC BY-SA 4.0",
+  "yazar": "Asturio Cantabrio"
+ },
+ "ev_comet": {
+  "ad": "Comet goldfish",
+  "tr": "Japon balığı (Komet)",
+  "bilim": "Carassius auratus",
+  "dosya": "Sarasa comet goldfish.JPG",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Sarasa_comet_goldfish.JPG",
+  "lisans": "CC BY 3.0",
+  "yazar": "Humanfeather / michelle jo"
+ },
+ "ev_palyaco": {
+  "ad": "Ocellaris clownfish",
+  "tr": "Palyaço balığı",
+  "bilim": "Amphiprion ocellaris",
+  "dosya": "Amphiprion ocellaris (Clown anemonefish) Nemo.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Amphiprion_ocellaris_(Clown_anemonefish)_Nemo.jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Nhobgood Nick Hobgood"
+ },
+ "ev_palyaco_percula": {
+  "ad": "Percula clownfish",
+  "tr": "Palyaço balığı",
+  "bilim": "Amphiprion percula",
+  "dosya": "Amphiprion percula 1.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Amphiprion_percula_1.jpg",
+  "lisans": "Public domain",
+  "yazar": "Karelj"
+ },
+ "ev_midas": {
+  "ad": "Midas cichlid",
+  "tr": "",
+  "bilim": "Amphilophus citrinellus",
+  "dosya": "Cichlidae Amphilophus citrinellus 1.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Cichlidae_Amphilophus_citrinellus_1.jpg",
+  "lisans": "CC BY-SA 4.0",
+  "yazar": "NasserHalaweh"
+ },
+ "ev_limon": {
+  "ad": "Lemon tetra",
+  "tr": "Limon tetra",
+  "bilim": "Hyphessobrycon pulchripinnis",
+  "dosya": "Citrontetra Hyphessobrycon pulchripinnis.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Citrontetra_Hyphessobrycon_pulchripinnis.jpg",
+  "lisans": "CC BY-SA 4.0",
+  "yazar": "SOK"
+ },
+ "ev_ates": {
+  "ad": "Ember tetra",
+  "tr": "Ateş tetrası",
+  "bilim": "Hyphessobrycon amandae",
+  "dosya": "Hyphessobrycon amandae A.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Hyphessobrycon_amandae_A.jpg",
+  "lisans": "CC BY-SA 4.0",
+  "yazar": "Klaus Rudloff"
+ },
+ "ev_serpae": {
+  "ad": "Serpae tetra",
+  "tr": "Kırmızı tetra",
+  "bilim": "Hyphessobrycon eques",
+  "dosya": "Hyphessobrycon serpae - Serpae Tetra.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Hyphessobrycon_serpae_-_Serpae_Tetra.jpg",
+  "lisans": "CC BY 3.0",
+  "yazar": "Francesco Loda"
+ },
+ "ev_kirmizigoz": {
+  "ad": "Redeye tetra",
+  "tr": "Kırmızı gözlü tetra",
+  "bilim": "Moenkhausia sanctaefilomenae",
+  "dosya": "Moenkhausia sanctaefilomenae (3678411).png",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Moenkhausia_sanctaefilomenae_(3678411).png",
+  "lisans": "CC BY 4.0",
+  "yazar": "Ota, Renata Rúbia; Deprá, Gabriel de Carvalho; Graça, Weferson Júnio da; Pavanelli, Carla Simone"
+ },
+ "ev_mucevher": {
+  "ad": "Jewel cichlid",
+  "tr": "Mücevher çiklidi",
+  "bilim": "Hemichromis bimaculatus",
+  "dosya": "Hemichromis bimaculatus1.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Hemichromis_bimaculatus1.jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": ""
+ },
+ "ev_akara": {
+  "ad": "Blue acara",
+  "tr": "Mavi akara",
+  "bilim": "Andinoacara pulcher",
+  "dosya": "Andinoacara pulcher spec. neonblue.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Andinoacara_pulcher_spec._neonblue.jpg",
+  "lisans": "CC0",
+  "yazar": "5snake5"
+ },
+ "ev_balta": {
+  "ad": "Silver hatchetfish",
+  "tr": "",
+  "bilim": "Gasteropelecus sternicla",
+  "dosya": "Gasteropelecus sternicla - 9326.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Gasteropelecus_sternicla_-_9326.jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Amada44"
+ },
+ "ev_bulut": {
+  "ad": "White cloud mountain minnow",
+  "tr": "Beyaz bulut balığı",
+  "bilim": "Tanichthys albonubes",
+  "dosya": "Tanichthys albonubes-kardinalka cinska.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Tanichthys_albonubes-kardinalka_cinska.jpg",
+  "lisans": "CC BY 4.0",
+  "yazar": "Petrtyl"
+ },
+ "ev_yelkenli": {
+  "ad": "Sailfin molly",
+  "tr": "Yelkenli molly",
+  "bilim": "Poecilia velifera",
+  "dosya": "Poecilia velifera.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Poecilia_velifera.jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Massysmith"
+ },
+ "ev_inci_danyo": {
+  "ad": "Celestial pearl danio",
+  "tr": "İnci danyo",
+  "bilim": "Danio margaritatus",
+  "dosya": "Danio margaritatus (zoom).jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Danio_margaritatus_(zoom).jpg",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Cisamarc"
+ },
+ "ev_toz_cerrah": {
+  "ad": "Powder blue tang",
+  "tr": "Toz mavisi cerrah balığı",
+  "bilim": "Acanthurus leucosternon",
+  "dosya": "Neon Fish.JPG",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Neon_Fish.JPG",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Ltz Raptor"
+ },
+ "ev_alev_melek": {
+  "ad": "Flame angelfish",
+  "tr": "Alev melek balığı",
+  "bilim": "Centropyge loricula",
+  "dosya": "Centropyge loricula 1.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Centropyge_loricula_1.jpg",
+  "lisans": "CC BY 2.0",
+  "yazar": "Dieter Karner from Loosdorf, Austria"
+ },
+ "ev_yesil_kromis": {
+  "ad": "Blue-green chromis",
+  "tr": "Yeşil kromis",
+  "bilim": "Chromis viridis",
+  "dosya": "Green.chromis.arp.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Green.chromis.arp.jpg",
+  "lisans": "Public domain",
+  "yazar": "Adrian Pingstone"
+ },
+ "ev_kanayan_kalp": {
+  "ad": "Bleeding heart tetra",
+  "tr": "Kanayan kalp tetrası",
+  "bilim": "Hyphessobrycon erythrostigma",
+  "dosya": "Hyphessobrycon erythrostigma - Kirschflecksalmer.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Hyphessobrycon_erythrostigma_-_Kirschflecksalmer.jpg",
+  "lisans": "CC0",
+  "yazar": "5snake5"
+ },
+ "ev_ates_gobi": {
+  "ad": "Firefish goby",
+  "tr": "Ateş gobisi",
+  "bilim": "Nemateleotris magnifica",
+  "dosya": "Nemateleotris magnifica 1.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Nemateleotris_magnifica_1.jpg",
+  "lisans": "CC BY-SA 2.0",
+  "yazar": "pakmat"
+ },
+ "ev_kongo": {
+  "ad": "Congo tetra",
+  "tr": "Kongo tetrası",
+  "bilim": "Phenacogrammus interruptus",
+  "dosya": "Phenacogrammus interruptus (aka).jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Phenacogrammus_interruptus_(aka).jpg",
+  "lisans": "CC BY-SA 2.5",
+  "yazar": "André Karwath aka Aka"
+ },
+ "ev_aslan": {
+  "ad": "Red lionfish",
+  "tr": "Aslan balığı",
+  "bilim": "Pterois volitans",
+  "dosya": "Common lion fish Pterois volitans.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Common_lion_fish_Pterois_volitans.jpg",
+  "lisans": "CC BY 3.0",
+  "yazar": "Michael Gäbler"
+ },
+ "ev_mandarin": {
+  "ad": "Mandarinfish",
+  "tr": "Mandarin balığı",
+  "bilim": "Synchiropus splendidus",
+  "dosya": "Synchiropus splendidus 02.JPG",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Synchiropus_splendidus_02.JPG",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "H. Zell"
+ },
+ "ev_inci_gurami": {
+  "ad": "Pearl gourami",
+  "tr": "İnci guramisi",
+  "bilim": "Trichopodus leerii",
+  "dosya": "Trichopodus leerii h080.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Trichopodus_leerii_h080.jpg",
+  "lisans": "CC BY-SA 2.0",
+  "yazar": "h080"
+ },
+ "ev_arlekin_rasbora": {
+  "ad": "Harlequin rasbora",
+  "tr": "Arlekin rasbora",
+  "bilim": "Trigonostigma heteromorpha",
+  "dosya": "Cyprinidae Trigonostigma heteromorpha 3.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Cyprinidae_Trigonostigma_heteromorpha_3.jpg",
+  "lisans": "CC BY-SA 4.0",
+  "yazar": "NasserHalaweh"
+ },
+ "ev_plati": {
+  "ad": "Blue platy",
+  "tr": "Plati",
+  "bilim": "Xiphophorus maculatus",
+  "dosya": "Platy (fish).jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Platy_(fish).jpg",
+  "lisans": "CC BY-SA 2.5",
+  "yazar": "Montoya at da.wikipedia"
+ },
+ "ev_zebra_danyo": {
+  "ad": "Zebra danio",
+  "tr": "Zebra balığı",
+  "bilim": "Danio rerio",
+  "dosya": "Leopard danio (cropped).jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Leopard_danio_(cropped).jpg",
+  "lisans": "CC0",
+  "yazar": "Roundish"
  }
 };
 window.ARKAPLAN_KAYNAK = {"dosya": "Reef aquarium at Burgers' Zoo (a).jpg", "sayfa": "https://commons.wikimedia.org/wiki/File:Reef_aquarium_at_Burgers%27_Zoo_(a).jpg", "lisans": "CC BY-SA 4.0", "yazar": "ErikvanB", "not": "Fotoğraftaki birkaç balık silindi (türetilmiş eser, aynı lisansla)."};

@@ -60,6 +60,16 @@ window.ARKAPLANLAR = [
   "mod": "okyanus"
  },
  {
+  "kod": "ev_paludarium",
+  "ad": "Orkideli paludarium",
+  "yol": "img/arkaplan/ev_paludarium-",
+  "yazar": "Dileepkumardr",
+  "lisans": "CC0",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Nature_Aquarium_Aquascape.jpg",
+  "dosya": "Nature Aquarium Aquascape.jpg",
+  "mod": "ev"
+ },
+ {
   "kod": "ev_aquascape",
   "ad": "Doğa akvaryumu",
   "yol": "img/arkaplan/ev_aquascape-",
