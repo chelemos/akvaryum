@@ -1115,15 +1115,6 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 4.0",
   "yazar": "Henryk Niestrój"
  },
- "ev_imparator": {
-  "ad": "Emperor angelfish",
-  "tr": "İmparator melek balığı",
-  "bilim": "Pomacanthus imperator",
-  "dosya": "Pez ángel emperador (Pomacanthus imperator), islas Ad Dimaniyat, Omán, 2024-08-15, DD 93.jpg",
-  "sayfa": "https://commons.wikimedia.org/wiki/File:Pez_%C3%A1ngel_emperador_(Pomacanthus_imperator),_islas_Ad_Dimaniyat,_Om%C3%A1n,_2024-08-15,_DD_93.jpg",
-  "lisans": "CC BY-SA 4.0",
-  "yazar": "Diego Delso"
- },
  "ev_ram": {
   "ad": "Ram cichlid",
   "tr": "Ram çiklidi",

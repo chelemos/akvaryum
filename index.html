@@ -316,7 +316,6 @@ Object.assign(AYAR, {
   ev_ryukin: { L: 80, hiz: 26, bolge: "hepsi", grup: [2, 3], dalga: 0.03 },
   ev_serpae: { L: 42, hiz: 42, bolge: "orta", grup: [6, 10], dalga: 0.05 },
   ev_yelkenli: { L: 66, hiz: 32, bolge: "orta", grup: [3, 5], dalga: 0.035 },
-  ev_imparator: { L: 104, hiz: 26, bolge: "orta", grup: [1, 1] },
   ev_toz_cerrah: { L: 88, hiz: 34, bolge: "hepsi", grup: [1, 3] },
   ev_alev_melek: { L: 58, hiz: 24, bolge: "orta", grup: [1, 2], dalga: 0.03 },
   ev_yesil_kromis: { L: 42, hiz: 40, bolge: "orta", grup: [6, 12], dalga: 0.05 },
@@ -345,7 +344,7 @@ const KORUNAKLI = new Set(["ev_aslan", "ev_mandarin", "kirpi", "kirpi_agdesenli"
 const TUM_KODLAR = Object.keys(window.KAYNAKLAR || {});
 const EV_KODLAR = TUM_KODLAR.filter(k => k.startsWith("ev_"));          // ev akvaryumu süs balıkları
 // Tuzlu su türleri (ev akvaryumunun yanında okyanusta da görünür)
-const DENIZ_EV = new Set(["ev_saritang", "ev_dori", "ev_imparator", "ev_palyaco", "ev_palyaco_percula", "ev_toz_cerrah", "ev_alev_melek",
+const DENIZ_EV = new Set(["ev_saritang", "ev_dori", "ev_palyaco", "ev_palyaco_percula", "ev_toz_cerrah", "ev_alev_melek",
   "ev_yesil_kromis", "ev_ates_gobi", "ev_aslan", "ev_mandarin"]);
 const OKYANUS_KODLAR = TUM_KODLAR.filter(k => !k.startsWith("ev_") || DENIZ_EV.has(k));
 let mod = kayit.oku("mod", "okyanus");                                  // "okyanus" | "ev"
