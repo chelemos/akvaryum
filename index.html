@@ -811,7 +811,9 @@ class Balik {
     const sp = Math.hypot(this.vx, this.vy);
     if (Math.abs(this.vx) > 3 * S) this.yon = Math.sign(this.vx);
     this.f = lerp(this.f, this.yon, Math.min(1, dt * 3));
-    const hedefEgim = this.d.dik ? 0 : clamp(Math.atan2(this.vy, Math.abs(this.vx) + 2) * 0.8, -0.35, 0.35);
+    // Yüksek gövdeli (diskus, kelebek gibi yassı) balıklar daha az eğilir; fazla eğilince burnu aşağıda duruyormuş gibi görünür
+    const egimSinir = this.h / this.w > 0.6 ? 0.14 : 0.3;
+    const hedefEgim = this.d.dik ? 0 : clamp(Math.atan2(this.vy, Math.abs(this.vx) + 2) * 0.7, -egimSinir, egimSinir);
     this.egim = lerp(this.egim, hedefEgim, Math.min(1, dt * 3));
     this.dalgaFaz += dt * (3 + sp / (5 * S));
     if (this.nabiz > 0) this.nabiz = Math.max(0, this.nabiz - dt);
