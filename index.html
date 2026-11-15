@@ -143,7 +143,11 @@
     <button id="muzikOynat" aria-label="Oynat / duraklat">⏯</button>
     <button id="muzikSonraki" aria-label="Sonraki parça">⏭</button>
     <span id="muzikAd"></span>
+  </div>
+  <div class="calar">
+    <label for="muzikSes">🔈 Müzik sesi</label>
     <input type="range" id="muzikSes" min="0" max="100" aria-label="Müzik sesi">
+    <span id="muzikSesYuzde"></span>
   </div>
   <div class="ayarlar"><button class="anahtar" id="muzikAyar"></button></div>
   <div id="muzikListe"></div>
@@ -157,8 +161,14 @@
   <p class="alt">Gerçekçi av: avcı balıklar ağızlarına sığan küçük balıkları yakalar; suda kan bulutu dağılır, balığın parçaları suya düşer
      ve başka balıklar onları yer. Kapatınca av yine olur ama kan ve parçalar görünmez.</p>
   <div class="bolum">Görüntü</div>
-  <div class="ayarlar"><button class="anahtar" id="kaliteAyar"></button></div>
+  <div class="ayarlar">
+    <button class="anahtar" id="kaliteAyar"></button>
+    <button class="anahtar" id="kurAyar" style="display:none">📲 Uygulama olarak yükle</button>
+  </div>
   <p class="alt" id="kaliteBilgi"></p>
+  <p class="alt">Tam ekrana geçince altta çıkan "Tam ekrandan çıkmak için…" yazısı tarayıcının kendi uyarısıdır, birkaç saniye sonra kaybolur ve
+     sayfadan kapatılamaz. Hiç uyarı ve çubuk olmadan açmak için uygulamayı yükle: Android'de yukarıdaki düğme ya da Chrome menüsünden
+     <b>Ana ekrana ekle</b>, iPad/iPhone'da Safari'de <b>Paylaş → Ana Ekrana Ekle</b>.</p>
 </div>
 
 <div id="rehber" class="panel" role="dialog" aria-label="Balık rehberi">
@@ -388,6 +398,11 @@ const yemDoku = tuvalDoku(24, 16, (g) => {
   g.beginPath(); g.ellipse(12, 8, 10, 6, 0.3, 0, 7); g.fill();
   g.fillStyle = "rgba(255,220,160,0.6)";
   g.beginPath(); g.ellipse(9, 6, 4, 2, 0.3, 0, 7); g.fill();
+});
+
+const halkaDoku = tuvalDoku(128, 128, (g) => {
+  g.strokeStyle = "rgba(255,255,255,0.9)"; g.lineWidth = 5;
+  g.beginPath(); g.arc(64, 64, 58, 0, 7); g.stroke();
 });
 
 // ---------------------------------------------------------------------
@@ -743,7 +758,7 @@ class Balik {
       a.spr.scale.set(a.k * dir * (a.sol ? 1 : -1) * (1 - yutma * 0.7), a.k * (1 - yutma * 0.7));
       a.spr.rotation = Math.sin(t * 17) * 0.24 * (1 - yutma) + this.egim * dir;
       a.kan -= dt;
-      if (a.kan <= 0 && ayar.kan) { kanBulutu(this.agizX, this.agizY, rnd(7, 11) * S, 2); a.kan = 0.22; }
+      if (a.kan <= 0 && ayar.kan) { kanBulutu(this.agizX, this.agizY, rnd(9, 14) * S, 3); a.kan = 0.2; }
       if (a.t >= a.sure) {
         a.spr.destroy();
         this.agizda = null;
@@ -826,7 +841,7 @@ class Balik {
 // ---------------------------------------------------------------------
 let kesif = new Set(kayit.oku("kesif", []));
 let ilkDolum = true, donguSayac = rnd(14, 22), girisBekle = 0;
-const hedefSayi = () => Math.round(clamp(clamp(W * H / 26000, 10, 48) * ayar.sayi, 6, 90));
+const hedefSayi = () => Math.round(clamp(clamp(W * H / 17000, 14, 62) * ayar.sayi, 6, Math.min(110, KODLAR.length - 4)));
 const aktifTurler = () => new Set(baliklar.map(b => b.kod));
 
 function yeniTurSec() {
@@ -980,10 +995,23 @@ const yenenler = new Map();   // yenen tür -> geri dönebileceği zaman (fark e
 let avSayac = rnd(10, 20); // ilk av açılıştan kısa süre sonra
 
 // Balığın fotoğrafından x0..x1 (0-1, soldan sağa) aralığını kesen doku
-function parcaDoku(doku, x0, x1) {
+function parcaDoku(doku, x0, x1, y0 = 0, y1 = 1) {
   const f = doku.frame;
-  return new PIXI.Texture(doku.baseTexture, new PIXI.Rectangle(f.x + f.width * x0, f.y, f.width * (x1 - x0), f.height));
+  return new PIXI.Texture(doku.baseTexture, new PIXI.Rectangle(f.x + f.width * x0, f.y + f.height * y0, f.width * (x1 - x0), f.height * (y1 - y0)));
 }
+// Genişleyen şok halkası ve kısa parlama (av anında)
+const halkalar = [];
+function halkaEkle(x, y, r, tur) {
+  const sp = new PIXI.Sprite(tur === "halka" ? halkaDoku : noktaDoku);
+  sp.anchor.set(0.5);
+  sp.blendMode = PIXI.BLEND_MODES.ADD;
+  sp.tint = tur === "halka" ? 0xffd2c8 : 0xff8a70;
+  sp.ozel = { x, y, r, t: 0, tur, omur: tur === "halka" ? 0.75 : 0.3 };
+  sp.position.set(x, y);
+  yemKap.addChild(sp);
+  halkalar.push(sp);
+}
+let titrek = 0, titrekG = 0;   // ekran titremesi (süre, genlik)
 function etParcasi(x, y, tex, olcek, renk) {
   const s = new PIXI.Sprite(tex);
   s.anchor.set(0.5);
@@ -1001,7 +1029,7 @@ function kanBulutu(x, y, r0, adet, vx = 0) {
     s.anchor.set(0.5);
     s.tint = pick([0x7a0c0c, 0x8e1414, 0x6a0a12]);
     const r = r0 * rnd(0.7, 1.3);
-    s.ozel = { x: x + rnd(-0.5, 0.5) * r, y: y + rnd(-0.4, 0.4) * r, r, vr: r * rnd(0.7, 1.3), vx: rnd(-6, 6) * S + vx * 0.15, vy: rnd(-4, 6) * S, a: rnd(0.32, 0.5), omur: rnd(5, 8), yas: 0 };
+    s.ozel = { x: x + rnd(-0.5, 0.5) * r, y: y + rnd(-0.4, 0.4) * r, r, vr: r * rnd(0.7, 1.3), vx: rnd(-6, 6) * S + vx * 0.15, vy: rnd(-4, 6) * S, a: rnd(0.4, 0.62), omur: rnd(5, 8), yas: 0 };
     bulutKap.addChild(s);
     bulutlar.push(s);
   }
@@ -1034,20 +1062,41 @@ function avYakala(avci, av) {
   avci.agizda = { spr: kuyruk, t: 0, sure: rnd(1.6, 2.2), k: kk, sol, kan: 0 };
 
   // 2) Kan bulutu: suda yavaşça yayılıp kaybolur
-  kanBulutu(x, y, Math.max(avH * rnd(0.5, 0.9), rnd(16, 26) * S), Math.round(clamp(avW / (8 * S), 10, 18)), avVx);
+  kanBulutu(x, y, Math.max(avH * rnd(0.5, 0.9), rnd(16, 26) * S), Math.round(clamp(avW / (6 * S), 14, 26)), avVx);
 
-  // 3) Gövdeden kopan parçalar: balığın kendi fotoğrafından kesilmiş, suya düşer; başka balıklar yer
-  const pencere = sol ? [[0, 0.36], [0.34, 0.64]] : [[0.64, 1], [0.36, 0.66]];
-  const kirmizimsi = pick([0xf2b3a6, 0xeaa598, 0xf5c2b4]);
+  // 3) Gövdeden kopan parçalar: balığın kendi fotoğrafından kesilmiş, fırlayıp dönerek suya düşer; başka balıklar yer
+  const pencere = sol ? [[0, 0.3], [0.26, 0.5], [0.48, 0.72]] : [[0.7, 1], [0.5, 0.74], [0.28, 0.52]];
+  const kirmizimsi = pick([0xf0a99c, 0xe89a8c, 0xf2b3a6]);
+  const firlat = p => { p.vx = rnd(-70, 70) * S; p.kick = rnd(-90, -15) * S; p.spin = rnd(-7, 7); return p; };
   for (const [a0, a1] of pencere) {
-    const p = etParcasi(x + rnd(-0.3, 0.3) * avW, y + rnd(-0.2, 0.2) * avH, parcaDoku(doku, a0, a1), kk * rnd(0.85, 1), kirmizimsi);
-    p.vx = rnd(-14, 14) * S;
+    firlat(etParcasi(x + rnd(-0.3, 0.3) * avW, y + rnd(-0.2, 0.2) * avH, parcaDoku(doku, a0, a1), kk * rnd(0.9, 1.1), kirmizimsi));
   }
-  // küçük et kırıntıları
-  for (let k = 0; k < 4; k++) {
-    const p = yemEkle(x + rnd(-0.4, 0.4) * avW, y + rnd(-0.2, 0.2) * avH, S * rnd(0.45, 0.75), pick([0xd98b7e, 0xc96a5e, 0xe8b0a0]), true);
-    p.s.rotation = rnd(0, 6);
+  // yüzgeç şeritleri (üst ve alt)
+  const u0 = rnd(0.15, 0.45);
+  firlat(etParcasi(x, y - avH * 0.3, parcaDoku(doku, u0, u0 + 0.3, 0, 0.3), kk * 1.0, kirmizimsi));
+  firlat(etParcasi(x, y + avH * 0.3, parcaDoku(doku, u0, u0 + 0.28, 0.72, 1), kk * 1.0, kirmizimsi));
+  // et şeritleri ve kırıntılar
+  for (let k = 0; k < 9; k++) {
+    const p = yemEkle(x + rnd(-0.4, 0.4) * avW, y + rnd(-0.25, 0.25) * avH, S * rnd(0.5, 0.9), pick([0xd98b7e, 0xc96a5e, 0xe8b0a0, 0xb04a44]), true);
+    p.s.scale.x *= rnd(1.5, 2.6);
+    firlat(p);
   }
+
+  // 3b) Vuruş etkisi: parlama, şok halkası, kan damlaları, hafif ekran titremesi
+  halkaEkle(x, y, avW * 1.1, "parlama");
+  halkaEkle(x, y, avW * 1.35, "halka");
+  for (let k = 0; k < 26; k++) {
+    const a = rnd(0, 6.283), v = rnd(50, 200) * S;
+    const sp = new PIXI.Sprite(noktaDoku);
+    sp.anchor.set(0.5);
+    sp.tint = pick([0xa01010, 0x7a0c0c, 0xc01c1c, 0x8e1414]);
+    sp.scale.set(S * rnd(0.07, 0.2));
+    sp.ozel = { x: x + rnd(-0.3, 0.3) * avW, y: y + rnd(-0.3, 0.3) * avH, vx: Math.cos(a) * v, vy: Math.sin(a) * v, omur: rnd(1.4, 2.8), damla: true };
+    yemKap.addChild(sp);
+    kirintilar.push(sp);
+  }
+  titrek = 0.3;
+  titrekG = clamp(avW / (28 * S), 3, 7);
 
   // 4) Pullar: parıldayarak yavaşça süzülür
   for (let k = 0; k < 14; k++) {
@@ -1097,20 +1146,24 @@ function etiket(b, kod, yeni) {
   const kap = new PIXI.Container();
   const font = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
   const yazi_ = new PIXI.Text(adi(kod), {
-    fontFamily: font, fontSize: Math.round(16 + 6 * S), fontWeight: "700", fill: 0x06324f,
+    fontFamily: font, fontSize: Math.round(10 + 2.6 * S), fontWeight: "600", fill: 0xffffff,
+    dropShadow: true, dropShadowColor: 0x000000, dropShadowAlpha: 0.5, dropShadowBlur: 2, dropShadowDistance: 1,
   });
   const bilim = new PIXI.Text(bilimAdi(kod), {
-    fontFamily: font, fontSize: Math.round(11 + 4 * S), fontStyle: "italic", fill: 0x3a5f72,
+    fontFamily: font, fontSize: Math.round(8.5 + 2 * S), fontStyle: "italic", fill: 0xbcd6e2,
   });
   for (const y of [yazi_, bilim]) { y.resolution = app.renderer.resolution; y.anchor.set(0.5); }
-  const bosluk = bilim.text ? bilim.height * 0.55 : 0;
-  yazi_.y = -bosluk; bilim.y = yazi_.height * 0.5;
-  const pw = Math.max(yazi_.width, bilim.width) + 30 * Math.max(1, S * 0.8);
-  const ph = yazi_.height + (bilim.text ? bilim.height : 0) + 12 * Math.max(1, S * 0.8);
-  const zemin = new PIXI.Graphics().beginFill(0xffffff, 0.92)
-    .drawRoundedRect(-pw / 2, -ph / 2 - bosluk * 0.5, pw, ph, Math.min(ph / 2, 22 * S)).endFill();
+  const aralik = bilim.text ? 1 : 0;
+  const yuk = yazi_.height + (bilim.text ? bilim.height + aralik : 0);
+  const pw = Math.max(yazi_.width, bilim.width) + 14 + 5 * S, ph = yuk + 7 + 2 * S;
+  yazi_.y = -yuk / 2 + yazi_.height / 2;
+  bilim.y = yuk / 2 - bilim.height / 2;
+  const zemin = new PIXI.Graphics().beginFill(0x021a2b, 0.5).drawRoundedRect(-pw / 2, -ph / 2, pw, ph, Math.min(ph / 2.4, 9)).endFill();
   kap.addChild(zemin, yazi_);
   if (bilim.text) kap.addChild(bilim); else bilim.destroy();
+  kap.olcek = pw > W * 0.94 ? (W * 0.94) / pw : 1;   // dar ekrana sığmazsa küçül
+  kap.scale.set(kap.olcek);
+  kap.yarim = pw / 2 * kap.olcek;
   etiketKatman.addChild(kap);
   etiketler.push({ b, kap, omur: yeni ? 4 : 3 });
 }
@@ -1458,7 +1511,7 @@ document.querySelectorAll(".kapat").forEach(b => (b.onclick = panelKapat));
 // ---------------------------------------------------------------------
 //  Ayarlar paneli: arka plan, müzik, akvaryum, görüntü
 // ---------------------------------------------------------------------
-const SAYI = [[0.6, "Az"], [1, "Normal"], [1.5, "Çok"], [2.2, "Çok fazla"]];
+const SAYI = [[0.6, "Az"], [1, "Normal"], [1.6, "Çok"], [2.4, "Çok fazla"], [3.4, "Akvaryum dolu"]];
 ayar.sayi = kayit.oku("sayi", 1);
 if (!SAYI.some(s => s[0] === ayar.sayi)) ayar.sayi = 1;
 
@@ -1512,13 +1565,20 @@ function ayarAc() {
   if (ilk) ilk.focus({ preventScroll: true });
 }
 document.getElementById("ayarDugme").onclick = () => { ses.ac(); ayarAc(); };
+let kurulum = null;
+const kurAyar = document.getElementById("kurAyar");
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); kurulum = e; kurAyar.style.display = ""; });
+addEventListener("appinstalled", () => { kurulum = null; kurAyar.style.display = "none"; });
+kurAyar.onclick = () => { if (kurulum) { kurulum.prompt(); kurulum = null; kurAyar.style.display = "none"; } };
 document.getElementById("muzikOnceki").onclick = () => { ses.ac(); muzik.git(-1); };
 document.getElementById("muzikSonraki").onclick = () => { ses.ac(); muzik.git(1); };
 document.getElementById("muzikOynat").onclick = () => { ses.ac(); ayar.muzik = !ayar.muzik; kayit.yaz("muzik", ayar.muzik); muzik.guncelle(); ayarYenile(); };
 document.getElementById("muzikAyar").onclick = document.getElementById("muzikOynat").onclick;
 const sesCubugu = document.getElementById("muzikSes");
 sesCubugu.value = Math.round(muzik.seviye * 100);
-sesCubugu.oninput = () => { muzik.seviye = sesCubugu.value / 100; kayit.yaz("muzikSes", muzik.seviye); muzik.guncelle(); };
+const sesYuzde = () => { document.getElementById("muzikSesYuzde").textContent = "%" + Math.round(muzik.seviye * 100); };
+sesCubugu.oninput = () => { muzik.seviye = sesCubugu.value / 100; kayit.yaz("muzikSes", muzik.seviye); muzik.guncelle(); sesYuzde(); };
+sesYuzde();
 document.getElementById("avAyar").onclick = () => { avDugme.onclick(); ayarYenile(); };
 document.getElementById("kanAyar").onclick = () => { ayar.kan = !ayar.kan; kayit.yaz("kan", ayar.kan); ayarYenile(); };
 document.getElementById("geceAyar").onclick = () => { geceDugme.onclick(); ayarYenile(); };
@@ -1720,6 +1780,8 @@ app.ticker.add(() => {
       p.x += Math.sin(t * 2 + p.ph) * 10 * S * dt;
       p.s.rotation += dt * (p.buyuk ? 0.25 : p.et ? 0.4 : 1);
       if (p.vx) { p.x += p.vx * dt; p.vx *= 0.97; }
+      if (p.kick) { p.y += p.kick * dt; p.kick *= 0.93; }
+      if (p.spin) { p.s.rotation += p.spin * dt; p.spin *= 0.97; }
       if (p.y >= ZEMIN()) { p.y = ZEMIN(); p.dipte = true; }
     } else {
       p.omur -= dt;
@@ -1732,7 +1794,10 @@ app.ticker.add(() => {
     const s = kirintilar[i], o = s.ozel;
     o.omur -= dt;
     o.x += o.vx * dt; o.y += o.vy * dt;
-    if (o.pul) {
+    if (o.damla) {
+      o.vx *= 0.93; o.vy *= 0.93; o.vy += 4 * S * dt;
+      s.alpha = clamp(o.omur, 0, 1) * 0.9;
+    } else if (o.pul) {
       o.vy += 3 * S * dt; o.vx *= 0.97;
       s.alpha = clamp(o.omur, 0, 1) * (0.4 + 0.6 * Math.abs(Math.sin(t * 9 + o.ph)));
     } else {
@@ -1742,6 +1807,20 @@ app.ticker.add(() => {
     s.position.set(o.x, o.y);
     if (o.omur <= 0) { s.destroy(); kirintilar.splice(i, 1); }
   }
+  for (let i = halkalar.length - 1; i >= 0; i--) {
+    const sp = halkalar[i], o = sp.ozel;
+    o.t += dt;
+    const k = o.t / o.omur;
+    if (k >= 1) { sp.destroy(); halkalar.splice(i, 1); continue; }
+    const rr = o.r * (o.tur === "halka" ? 0.25 + 0.85 * Math.sqrt(k) : 0.4 + 0.6 * k);
+    sp.scale.set(o.tur === "halka" ? rr * 2 / 128 : rr * 2 / 32);
+    sp.alpha = (1 - k) * (o.tur === "halka" ? 0.6 : 0.6);
+  }
+  if (titrek > 0) {
+    titrek -= dt;
+    const g = titrekG * Math.max(0, titrek) / 0.3;
+    app.stage.position.set(rnd(-g, g), rnd(-g, g));
+  } else if (app.stage.x || app.stage.y) app.stage.position.set(0, 0);
   // Kan bulutu yavaşça genişler, sürüklenir ve söner
   for (let i = bulutlar.length - 1; i >= 0; i--) {
     const s = bulutlar[i], o = s.ozel;
@@ -1770,8 +1849,8 @@ app.ticker.add(() => {
     const e = etiketler[i];
     e.omur -= dt;
     if (e.omur <= 0 || e.b.kap.destroyed) { e.kap.destroy({ children: true }); etiketler.splice(i, 1); continue; }
-    e.kap.position.set(clamp(e.b.x, 90 * S, W - 90 * S), Math.max(30 * S, e.b.y - e.b.h * 0.6 - 22 * S));
-    e.kap.alpha = Math.min(1, e.omur * 2);
+    e.kap.position.set(clamp(e.b.x, e.kap.yarim + 4, W - e.kap.yarim - 4), Math.max(24 * S, e.b.y - e.b.h * 0.6 - 14 * S));
+    e.kap.alpha = Math.min(1, e.omur * 2) * 0.92;
   }
 
   // Parmak halkası
