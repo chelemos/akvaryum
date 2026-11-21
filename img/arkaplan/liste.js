@@ -60,16 +60,6 @@ window.ARKAPLANLAR = [
   "mod": "okyanus"
  },
  {
-  "kod": "ev_paludarium",
-  "ad": "Orkideli paludarium",
-  "yol": "img/arkaplan/ev_paludarium-",
-  "yazar": "Dileepkumardr",
-  "lisans": "CC0",
-  "sayfa": "https://commons.wikimedia.org/wiki/File:Nature_Aquarium_Aquascape.jpg",
-  "dosya": "Nature Aquarium Aquascape.jpg",
-  "mod": "ev"
- },
- {
   "kod": "ev_aquascape",
   "ad": "Doğa akvaryumu",
   "yol": "img/arkaplan/ev_aquascape-",
@@ -77,6 +67,36 @@ window.ARKAPLANLAR = [
   "lisans": "CC BY-SA 3.0",
   "sayfa": "https://commons.wikimedia.org/wiki/File:90x45x45,_KAPS_%EB%8C%80%EC%83%81.jpg",
   "dosya": "90x45x45, KAPS 대상.jpg",
+  "mod": "ev"
+ },
+ {
+  "kod": "ev_resif_tank",
+  "ad": "Mercan resifi tankı",
+  "yol": "img/arkaplan/ev_resif_tank-",
+  "yazar": "WolfmanSF",
+  "lisans": "CC BY-SA 4.0",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:CAS_Steinhart_Aquarium_small_coral_tank.jpg",
+  "dosya": "CAS Steinhart Aquarium small coral tank.jpg",
+  "mod": "ev"
+ },
+ {
+  "kod": "ev_orman",
+  "ad": "Taşlı orman akvaryumu",
+  "yol": "img/arkaplan/ev_orman-",
+  "yazar": "조재선",
+  "lisans": "CC BY-SA 3.0",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:2021_IAPLC_Time.jpg",
+  "dosya": "2021 IAPLC Time.jpg",
+  "mod": "ev"
+ },
+ {
+  "kod": "ev_mor_resif",
+  "ad": "Mor mercan tankı",
+  "yol": "img/arkaplan/ev_mor_resif-",
+  "yazar": "Alexander Grebenkov",
+  "lisans": "CC BY 3.0",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Kaliningrad_-_World_Ocean_Museum_-_Purple_and_green_reef_aquarium.jpg",
+  "dosya": "Kaliningrad - World Ocean Museum - Purple and green reef aquarium.jpg",
   "mod": "ev"
  }
 ];

@@ -42,7 +42,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Gramma loreto",
-  "tr": ""
+  "tr": "Kraliyet gramması"
  },
  "lapin_mavibas": {
   "ad": "Bluehead wrasse",
@@ -132,7 +132,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Equetus punctatus",
-  "tr": ""
+  "tr": "Benekli davulcu balığı"
  },
  "cuce_melek": {
   "ad": "Cherubfish",
@@ -150,7 +150,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Liopropoma rubre",
-  "tr": ""
+  "tr": "Nane levreği"
  },
  "asker": {
   "ad": "Blackbar soldierfish",
@@ -177,7 +177,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Opistognathus aurifrons",
-  "tr": ""
+  "tr": "Sarı başlı çene balığı"
  },
  "kirpi": {
   "ad": "Longspined porcupinefish",
@@ -213,7 +213,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Lutjanus synagris",
-  "tr": ""
+  "tr": "Şeritli lutyan"
  },
  "kreol": {
   "ad": "Creole-fish",
@@ -222,7 +222,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Paranthias furcifer",
-  "tr": ""
+  "tr": "Kreol balığı"
  },
  "lapin_mor": {
   "ad": "Creole wrasse",
@@ -276,7 +276,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Caranx ruber",
-  "tr": ""
+  "tr": "Çubuklu istavrit"
  },
  "cerrah_doktor": {
   "ad": "Doctorfish",
@@ -303,7 +303,7 @@ window.KAYNAKLAR = {
   "lisans": "Public domain",
   "yazar": "R. R. Lauth (AFSC), J. W. Orr (AFSC), D. W. Kessler (AFSC), and K. Amaoka (NWAFC); Alaska Fisheries Science Center, NOAA Fisheries Service",
   "bilim": "",
-  "tr": ""
+  "tr": "Dikenli kaya balığı"
  },
  "sahin_benekli": {
   "ad": "Redspotted hawkfish",
@@ -366,7 +366,7 @@ window.KAYNAKLAR = {
   "lisans": "No restrictions",
   "yazar": "Smithsonian Institution from United States",
   "bilim": "Bodianus rufus",
-  "tr": ""
+  "tr": "İspanyol domuz balığı"
  },
  "dosya_benekli": {
   "ad": "Whitespotted filefish",
@@ -483,7 +483,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Enneanectes altivelis",
-  "tr": ""
+  "tr": "Üç yüzgeçli balık"
  },
  "orfoz_kirmizi": {
   "ad": "Red hind",
@@ -582,7 +582,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Heteropriacanthus cruentatus",
-  "tr": ""
+  "tr": "Camgöz balığı"
  },
  "denizati": {
   "ad": "Dragon seahorse",
@@ -600,7 +600,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Hypoplectrus nigricans",
-  "tr": ""
+  "tr": "Kara hamlet"
  },
  "kopekbaligi_mako": {
   "ad": "Shortfin mako",
@@ -636,7 +636,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Lobotes surinamensis",
-  "tr": ""
+  "tr": "Üçkuyruk balığı"
  },
  "tranca_karayuzgec": {
   "ad": "Blackfin snapper",
@@ -645,7 +645,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Lutjanus buccanella",
-  "tr": ""
+  "tr": "Kara yüzgeçli lutyan"
  },
  "gobi_kirmizi": {
   "ad": "Pygmy goby",
@@ -735,7 +735,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Opistognathus whitehursti",
-  "tr": ""
+  "tr": "Koyu renkli çene balığı"
  },
  "davulcu_sapkali": {
   "ad": "High-hat",
@@ -744,7 +744,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Pareques acuminatus",
-  "tr": ""
+  "tr": "Şapkalı davulcu balığı"
  },
  "ciklit_elektra": {
   "ad": "Deepwater hap",
@@ -753,7 +753,7 @@ window.KAYNAKLAR = {
   "lisans": "Public domain",
   "yazar": "Paolo Neo",
   "bilim": "Placidochromis electra",
-  "tr": ""
+  "tr": "Derin su çiklidi"
  },
  "yildizbakan": {
   "ad": "Saddle stargazer",
@@ -762,7 +762,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Platygillellus rubrocinctus",
-  "tr": ""
+  "tr": "Eyerli yıldızbakan"
  },
  "asker_utangac": {
   "ad": "Cardinal soldierfish",
@@ -807,7 +807,7 @@ window.KAYNAKLAR = {
   "lisans": "Public domain",
   "yazar": "AnonymousUnknown author",
   "bilim": "Sebastes sp.",
-  "tr": ""
+  "tr": "Kırmızı kaya balığı"
  },
  "gunes_kirmizikulak": {
   "ad": "Redear sunfish",
@@ -834,7 +834,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Rhomboplites aurorubens",
-  "tr": ""
+  "tr": "Kızıl lutyan"
  },
  "sabun_sari": {
   "ad": "Freckled soapfish",
@@ -843,7 +843,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Rypticus bistripinus",
-  "tr": ""
+  "tr": "Çilli sabun balığı"
  },
  "sabun_benekli": {
   "ad": "Spotted soapfish",
@@ -852,7 +852,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Rypticus subbifrenatus",
-  "tr": ""
+  "tr": "Benekli sabun balığı"
  },
  "sincap_cizgili": {
   "ad": "Reef squirrelfish",
@@ -897,7 +897,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Selar crumenophthalmus",
-  "tr": ""
+  "tr": "İri gözlü istavrit"
  },
  "levrek_fener": {
   "ad": "Lantern bass",
@@ -924,7 +924,7 @@ window.KAYNAKLAR = {
   "lisans": "Public domain",
   "yazar": "USFWS Mountain Prairie",
   "bilim": "Lepisosteus platostomus",
-  "tr": ""
+  "tr": "Kısa burunlu gar balığı"
  },
  "levrek_kucukagiz": {
   "ad": "Smallmouth bass",
@@ -933,7 +933,7 @@ window.KAYNAKLAR = {
   "lisans": "Public domain",
   "yazar": "USFWS Mountain Prairie",
   "bilim": "Micropterus dolomieu",
-  "tr": ""
+  "tr": "Küçük ağızlı levrek"
  },
  "papagan_mavi": {
   "ad": "Redtail parrotfish",
@@ -960,7 +960,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Stegastes partitus",
-  "tr": ""
+  "tr": "İki renkli kız balığı"
  },
  "kiz_sari": {
   "ad": "Threespot damselfish",
@@ -969,7 +969,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Stegastes planifrons",
-  "tr": ""
+  "tr": "Üç benekli kız balığı"
  },
  "kertenkele": {
   "ad": "Sand diver",
@@ -996,7 +996,7 @@ window.KAYNAKLAR = {
   "lisans": "Public domain",
   "yazar": "USFWS Mountain Prairie",
   "bilim": "Morone chrysops",
-  "tr": ""
+  "tr": "Beyaz levrek"
  },
  "ustura_yesil": {
   "ad": "Green razorfish",
@@ -1014,7 +1014,7 @@ window.KAYNAKLAR = {
   "lisans": "Public domain",
   "yazar": "USFWS Mountain Prairie",
   "bilim": "Perca flavescens",
-  "tr": ""
+  "tr": "Sarı perka"
  },
  "kromis_mavi": {
   "ad": "Blue chromis",
@@ -1023,7 +1023,7 @@ window.KAYNAKLAR = {
   "lisans": "CC BY 2.5",
   "yazar": "Williams, J. T.; Carpenter, K. E.; Van Tassell, J. L.; Hoetjes, P.; Toller, W.; Etnoyer, P.; Smith, M.",
   "bilim": "Chromis cyanea",
-  "tr": ""
+  "tr": "Mavi kromis"
  },
  "ev_japon": {
   "ad": "Goldfish",
@@ -1216,7 +1216,7 @@ window.KAYNAKLAR = {
  },
  "ev_midas": {
   "ad": "Midas cichlid",
-  "tr": "",
+  "tr": "Midas çiklidi",
   "bilim": "Amphilophus citrinellus",
   "dosya": "Cichlidae Amphilophus citrinellus 1.jpg",
   "sayfa": "https://commons.wikimedia.org/wiki/File:Cichlidae_Amphilophus_citrinellus_1.jpg",
@@ -1279,7 +1279,7 @@ window.KAYNAKLAR = {
  },
  "ev_balta": {
   "ad": "Silver hatchetfish",
-  "tr": "",
+  "tr": "Gümüş balta balığı",
   "bilim": "Gasteropelecus sternicla",
   "dosya": "Gasteropelecus sternicla - 9326.jpg",
   "sayfa": "https://commons.wikimedia.org/wiki/File:Gasteropelecus_sternicla_-_9326.jpg",
