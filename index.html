@@ -12,6 +12,22 @@
 <link rel="apple-touch-icon" href="img/simge-180.png">
 <link rel="icon" type="image/png" href="img/simge-192.png">
 <title>Akvaryum</title>
+<script>
+// Kendini güncelleme: tarayıcı eski sayfayı (önbellekten) açtıysa ve yayındaki sürüm farklıysa önbelleği atlayarak yeniden yükler.
+// "__SURUM__" yayın sırasında (kaynak/yayin_hazirla.py) içerik özetiyle değişir; geliştirme sürümünde kontrol yapılmaz.
+(function () {
+  var S = "d8f6e4d20f";
+  if (S.indexOf("__") === 0 || !window.fetch) return;
+  fetch("surum.txt?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
+    t = (t || "").trim();
+    if (!t || t === S) return;
+    var u = new URL(location.href);
+    if (u.searchParams.get("s") === t) return;   // bu sürümü zaten istedik, döngüye girme
+    u.searchParams.set("s", t);
+    location.replace(u.toString());
+  }).catch(function () {});
+})();
+</script>
 <style>
   html, body {
     margin: 0; height: 100%; background: #062f55; overflow: hidden;
@@ -628,9 +644,17 @@ function arkaBuyut() {
   }).catch(() => {});
 }
 async function arkaplanAc(kod, anlik) {
+  if (!ARKA_LISTE.some(a => a.kod === kod)) kod = arkaVarsayilan(mod);   // listede olmayan (kaldırılmış) arka plan
   aktifArka = kod;
   kayit.yaz(ARKA_LISTE.find(a => a.kod === kod).mod === "ev" ? "arkaplan_ev" : "arkaplan2", kod);
-  const kucuk = await arkaYukle(kod, 1280);
+  let kucuk = null;
+  try { kucuk = await arkaYukle(kod, 1280); } catch (e) {}
+  if (!kucuk || !(kucuk.width > 1)) {
+    // Dosya yüklenemedi (eski önbellek, silinmiş dosya): arka plan takılı kalmasın, moda uygun varsayılana, o da olmazsa Derin resife dön
+    const yedek = kod !== arkaVarsayilan(mod) ? arkaVarsayilan(mod) : "derin";
+    if (yedek !== kod && ARKA_LISTE.some(a => a.kod === yedek)) { kayit.yaz(mod === "ev" ? "arkaplan_ev" : "arkaplan2", yedek); return arkaplanAc(yedek, anlik); }
+    return;
+  }
   if (aktifArka !== kod) return;
   if (anlik) { arkaplan.texture = kucuk; arkaplan.kod = kod; }
   else { arkaplan2.texture = kucuk; arkaplan2.kod = kod; arkaplan2.alpha = 0; gecis = { sure: 0 }; }
@@ -1885,8 +1909,13 @@ document.querySelectorAll(".kapat").forEach(b => (b.onclick = panelKapat));
 //  Ayarlar paneli: arka plan, müzik, akvaryum, görüntü
 // ---------------------------------------------------------------------
 const SAYI = [[0.6, "Az"], [1, "Normal"], [1.6, "Çok"], [2.4, "Çok fazla"], [3.4, "Akvaryum dolu"]];
-ayar.sayi = kayit.oku("sayi", 1);
-if (!SAYI.some(s => s[0] === ayar.sayi)) ayar.sayi = 1;
+// Balık sayısı moda göre ayrı tutulur: ilk ayar okyanusta "Az", ev akvaryumunda "Çok"; modlar arası geçişte her mod kendi ayarında kalır
+const SAYI_ILK = { okyanus: 0.6, ev: 1.6 };
+const sayiOku = m => {
+  const v = kayit.oku("sayi_" + m, SAYI_ILK[m]);
+  return SAYI.some(s => s[0] === v) ? v : SAYI_ILK[m];
+};
+ayar.sayi = sayiOku(mod);
 
 function arkaKartIsaretle() {
   for (const k of document.querySelectorAll("#arkaplanKartlar .kart")) k.classList.toggle("secili", k.dataset.kod === aktifArka);
@@ -1927,7 +1956,9 @@ function arkaKartlariYap() {
     const k = document.createElement("button");
     k.className = "kart"; k.dataset.kod = a.kod;
     k.innerHTML = `<img loading="lazy" alt=""><span></span>`;
-    k.querySelector("img").src = `${a.yol}1280.webp`;
+    const im = k.querySelector("img");
+    im.onerror = () => k.remove();   // görseli yoksa (eski önbellek) kart kaybolsun
+    im.src = `${a.yol}1280.webp`;
     k.querySelector("span").textContent = a.ad;
     k.onclick = () => { if (a.kod !== aktifArka) arkaplanAc(a.kod, false); else arkaKartIsaretle(); };
     kap.appendChild(k);
@@ -1963,6 +1994,7 @@ const modDugme = document.getElementById("modDugme");
 function modDegistir(m) {
   if (m === mod || (m === "ev" && !EV_KODLAR.length)) return;
   mod = m;
+  ayar.sayi = sayiOku(m);   // bu modun balık sayısı ayarı
   modNesil++;
   kayit.yaz("mod2", m);
   for (const b of baliklar.slice()) b.yokEt();
@@ -2016,7 +2048,7 @@ document.getElementById("geceAyar").onclick = () => { geceDugme.onclick(); ayarY
 document.getElementById("sayiAyar").onclick = () => {
   const i = SAYI.findIndex(s => s[0] === ayar.sayi);
   ayar.sayi = SAYI[(i + 1) % SAYI.length][0];
-  kayit.yaz("sayi", ayar.sayi);
+  kayit.yaz("sayi_" + mod, ayar.sayi);
   yukSkala = 1; kayit.yaz("yuk", 1);
   ayarYenile();
 };
