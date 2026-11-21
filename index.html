@@ -202,7 +202,7 @@
 <script src="lib/pixi-7.4.2.min.js"></script>
 <script src="img/balik/kaynaklar.js?s=20261122"></script>
 <script src="muzik/liste.js?s=20261118"></script>
-<script src="img/arkaplan/liste.js?s=20261121"></script>
+<script src="img/arkaplan/liste.js?s=20261122"></script>
 <script>
 "use strict";
 // =====================================================================
@@ -349,7 +349,8 @@ const EV_KODLAR = TUM_KODLAR.filter(k => k.startsWith("ev_"));          // ev ak
 const DENIZ_EV = new Set(["ev_saritang", "ev_dori", "ev_palyaco", "ev_palyaco_percula", "ev_toz_cerrah", "ev_alev_melek",
   "ev_yesil_kromis", "ev_ates_gobi", "ev_aslan", "ev_mandarin"]);
 const OKYANUS_KODLAR = TUM_KODLAR.filter(k => !k.startsWith("ev_") || DENIZ_EV.has(k));
-let mod = kayit.oku("mod", "okyanus");                                  // "okyanus" | "ev"
+// İlk açılışta ev akvaryumu; kullanıcı okyanusa geçerse seçim hatırlanır ("mod2": eski kayıtlı seçimler bir kez sıfırlansın)
+let mod = kayit.oku("mod2", "ev");                                       // "okyanus" | "ev"
 if (mod === "ev" && !EV_KODLAR.length) mod = "okyanus";
 const kodlar = () => (mod === "ev" ? EV_KODLAR : OKYANUS_KODLAR);
 const tur = kod => Object.assign({}, VARSAYILAN, AYAR[kod] || {});
@@ -595,23 +596,17 @@ arkaplan2.alpha = 0;
 const BG_AYAR = {
   derin: { ton: [0.66, 0.83, 0.95], isik: 1 },
   isikli: { ton: [0.72, 0.88, 1.0], isik: 0.75 },
-  cayir: { ton: [0.6, 0.95, 0.78], isik: 0.6 },
-  batik: { ton: [0.55, 0.72, 0.8], isik: 0.35 },
-  moore: { ton: [0.74, 0.9, 0.96], isik: 0.8 },
-  ras: { ton: [0.8, 0.88, 0.92], isik: 0.7 },
-  capa: { ton: [0.72, 0.92, 0.98], isik: 0.9 },
-  ev_aquascape: { ton: [0.86, 0.96, 0.82], isik: 0.5 },
-  ev_resif_tank: { ton: [0.62, 0.74, 1.0], isik: 0.5 },
-  ev_orman: { ton: [0.62, 0.86, 0.78], isik: 0.35 },
   ev_mor_resif: { ton: [0.56, 0.62, 0.98], isik: 0.4 },
 };
-const ARKA_LISTE = (window.ARKAPLANLAR || []).concat([{ kod: "derin", ad: "Derin resif (akvaryum)", yol: "img/arkaplan-" }])
-  .sort((a, b) => (b.kod === "ras") - (a.kod === "ras"));
-const EV_ARKA_ILK = (ARKA_LISTE.find(a => a.mod === "ev") || {}).kod;   // ev akvaryumu ilk arka planı
+const ARKA_LISTE = (window.ARKAPLANLAR || []).concat([{ kod: "derin", ad: "Derin resif (akvaryum)", yol: "img/arkaplan-" }]);
 const modArka = m => ARKA_LISTE.filter(a => (a.mod || "okyanus") === m);
-const arkaVarsayilan = m => (m === "ev" ? (ARKA_LISTE.some(a => a.kod === "ev_aquascape") ? "ev_aquascape" : (EV_ARKA_ILK || "ras")) : "ras");
-let aktifArka = kayit.oku(mod === "ev" ? "arkaplan_ev" : "arkaplan2", arkaVarsayilan(mod));   // okyanus: keskin Ras Muhammad resifi
-if (!modArka(mod).some(a => a.kod === aktifArka)) aktifArka = modArka(mod).length ? modArka(mod)[0].kod : "derin";
+// Varsayılanlar: ev akvaryumu "Mor mercan tankı"; okyanus "Işıklı sığ resif" (diğeri: Derin resif)
+const arkaVarsayilan = m => {
+  const ilk = m === "ev" ? "ev_mor_resif" : "isikli";
+  return modArka(m).some(a => a.kod === ilk) ? ilk : ((modArka(m)[0] || {}).kod || "derin");
+};
+let aktifArka = kayit.oku(mod === "ev" ? "arkaplan_ev" : "arkaplan2", arkaVarsayilan(mod));
+if (!modArka(mod).some(a => a.kod === aktifArka)) aktifArka = arkaVarsayilan(mod);   // kaldırılmış arka plan kayıtlıysa varsayılana dön
 const arkaAyar = () => BG_AYAR[aktifArka] || BG_AYAR.derin;
 let gecis = null;   // arka plan geçişi: { sure }
 const arkaYukle = (kod, w) => PIXI.Assets.load(`${ARKA_LISTE.find(a => a.kod === kod).yol}${w}.webp`);
@@ -624,6 +619,10 @@ function arkaBuyut() {
   const kod = aktifArka, w = arkaGenislik();
   if (w <= 1280) return;
   arkaYukle(kod, w).then(t => {
+    // Bazı arka planların büyük sürümü 3840'tan geniş (orijinal çözünürlük): GPU'nun doku sınırını aşıyorsa küçük sürüm kalır
+    let maks = 4096;
+    try { maks = app.renderer.gl.getParameter(app.renderer.gl.MAX_TEXTURE_SIZE) || 4096; } catch (e) {}
+    if (t.width > maks) return;
     for (const a of [arkaplan, arkaplan2]) if (a.kod === kod && a.texture.width < w) a.texture = t;
     yerlestir();
   }).catch(() => {});
@@ -1965,7 +1964,7 @@ function modDegistir(m) {
   if (m === mod || (m === "ev" && !EV_KODLAR.length)) return;
   mod = m;
   modNesil++;
-  kayit.yaz("mod", m);
+  kayit.yaz("mod2", m);
   for (const b of baliklar.slice()) b.yokEt();
   baliklar.length = 0;
   for (const e of etiketler) e.omur = 0;
@@ -1973,7 +1972,7 @@ function modDegistir(m) {
   beklenen.clear(); yenenler.clear();
   ilkDolum = true;
   const kayitli = kayit.oku(m === "ev" ? "arkaplan_ev" : "arkaplan2", arkaVarsayilan(m));
-  arkaplanAc(modArka(m).some(a => a.kod === kayitli) ? kayitli : (modArka(m)[0] || { kod: "derin" }).kod, false);
+  arkaplanAc(modArka(m).some(a => a.kod === kayitli) ? kayitli : arkaVarsayilan(m), false);
   avDugme.style.display = m === "ev" ? "none" : "";
   modDugme.textContent = m === "ev" ? "🌊" : "🏠";
   modDugme.style.display = EV_KODLAR.length ? "" : "none";
