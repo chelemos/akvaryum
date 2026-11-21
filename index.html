@@ -163,6 +163,7 @@
     <button class="anahtar" id="avAyar"></button>
     <button class="anahtar" id="kanAyar"></button>
     <button class="anahtar" id="geceAyar"></button>
+    <button class="anahtar" id="isimAyar"></button>
     <button class="anahtar" id="efektAyar"></button>
     <button class="anahtar" id="sayiAyar"></button>
   </div>
@@ -356,12 +357,57 @@ const adi = kod => {
   if (!k) return kod;
   return k.tr ? `${k.ad} (${k.tr})` : k.ad;   // örn. "Stoplight parrotfish (Papağan balığı)"
 };
+// Balığın adını sesli söyler: Türkçe adı varsa Türkçe (parantez içi ayrıntı okunmaz), yoksa uluslararası adı İngilizce.
+// Cihazın kendi konuşma sesini kullanır (internet gerekmez); Türkçe ses yoksa susar.
+const konus = {
+  destek: "speechSynthesis" in window && "SpeechSynthesisUtterance" in window,
+  sesler: [],
+  bulundu: false,
+  yukle() {
+    if (!this.destek) return;
+    const al = () => { this.sesler = speechSynthesis.getVoices() || []; };
+    al();
+    try { speechSynthesis.addEventListener("voiceschanged", al); } catch (e) { speechSynthesis.onvoiceschanged = al; }
+  },
+  // iPad/iPhone: konuşma ilk kez dokunuşun içinde başlatılmalı; sessiz bir cümleyle hazırlanır
+  isit() {
+    if (!this.destek || this.isindi) return;
+    this.isindi = true;
+    try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
+  },
+  ses(dil) {
+    const on = dil.slice(0, 2).toLowerCase();
+    const hep = this.sesler.filter(v => (v.lang || "").toLowerCase().replace("_", "-").startsWith(on));
+    return hep.find(v => v.localService) || hep[0] || null;
+  },
+  trVar() { return !this.sesler.length || !!this.ses("tr"); },
+  soyle(kod) {
+    if (!this.destek || !ayar.isim || !ses.acik) return;
+    const k = window.KAYNAKLAR && KAYNAKLAR[kod];
+    if (!k) return;
+    const tr = (k.tr || "").replace(/\s*\(.*?\)\s*/g, " ").trim();
+    const metin = tr || k.ad;
+    const dil = tr ? "tr-TR" : "en-US";
+    const v = this.ses(dil);
+    if (this.sesler.length && !v) return;   // bu cihazda o dilde ses yok: yanlış okumasın
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(metin);
+      u.lang = dil; if (v) u.voice = v;
+      u.rate = 0.82; u.pitch = 1.05; u.volume = 1;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  },
+  sustur() { try { if (this.destek) speechSynthesis.cancel(); } catch (e) {} },
+};
+konus.yukle();
 const bilimAdi = kod => (window.KAYNAKLAR && KAYNAKLAR[kod] && KAYNAKLAR[kod].bilim) || "";
 const ayar = {
   av: kayit.oku("av", true),     // avcılar küçük balıkları avlasın mı
   muzik: kayit.oku("muzik", true),
   efekt: kayit.oku("efekt", false),   // küçük efekt sesleri (varsayılan kapalı: sadece piyano)
   kan: kayit.oku("kan", true),   // gerçekçi av: kan bulutu ve artık parçalar
+  isim: kayit.oku("isim", true),   // balığa dokununca adını sesli söyle (cihazın konuşma sesiyle)
 };
 
 // =====================================================================
@@ -1266,6 +1312,7 @@ function avYonet(dt) {
 const etiketler = [];
 function etiket(b, kod, yeni) {
   for (const e of etiketler.filter(e => e.b === b)) e.omur = 0;
+  konus.soyle(kod);
   const kap = new PIXI.Container();
   const font = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
   const yazi_ = new PIXI.Text(adi(kod), {
@@ -1299,6 +1346,8 @@ parmakHalka.blendMode = PIXI.BLEND_MODES.ADD;
 parmakHalka.alpha = 0;
 katman.parca.addChild(parmakHalka);
 
+addEventListener("pointerup", () => konus.isit(), { once: true });
+addEventListener("touchend", () => konus.isit(), { once: true });
 app.view.addEventListener("pointerdown", e => {
   basili = true;
   ses.ac();
@@ -1514,7 +1563,7 @@ async function ekranUyanik() {
 }
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") { ekranUyanik(); muzik.surdur(); }
-  else muzik.durdurAni("arka");
+  else { muzik.durdurAni("arka"); konus.sustur(); }
 });
 window.addEventListener("pagehide", () => muzik.durdurAni("arka"));
 document.addEventListener("freeze", () => muzik.durdurAni("arka"));
@@ -1661,6 +1710,10 @@ function ayarYenile() {
   yaz("kanAyar", "🩸 Kan ve parçalar", ayar.kan);
   yaz("geceAyar", "🌙 Gece modu", gece.acik);
   yaz("efektAyar", "🔔 Efekt sesleri", ayar.efekt);
+  const ia = document.getElementById("isimAyar");
+  ia.style.display = konus.destek ? "" : "none";
+  yaz("isimAyar", "🗣 Balığın adını söyle", ayar.isim);
+  if (konus.destek && !konus.trVar()) ia.textContent += " (bu cihazda Türkçe ses yok)";
   const sy = document.getElementById("sayiAyar");
   sy.textContent = "🐠 Balık sayısı: " + SAYI.find(s => s[0] === ayar.sayi)[1];
   sy.classList.add("acik");
@@ -1758,6 +1811,7 @@ document.getElementById("uykuAyar").onclick = () => {
 };
 document.getElementById("avAyar").onclick = () => { avDugme.onclick(); ayarYenile(); };
 document.getElementById("kanAyar").onclick = () => { ayar.kan = !ayar.kan; kayit.yaz("kan", ayar.kan); ayarYenile(); };
+document.getElementById("isimAyar").onclick = () => { ayar.isim = !ayar.isim; kayit.yaz("isim", ayar.isim); konus.isit(); if (!ayar.isim) konus.sustur(); ayarYenile(); };
 document.getElementById("efektAyar").onclick = () => { ayar.efekt = !ayar.efekt; kayit.yaz("efekt", ayar.efekt); ses.ac(); ayarYenile(); };
 document.getElementById("geceAyar").onclick = () => { geceDugme.onclick(); ayarYenile(); };
 document.getElementById("sayiAyar").onclick = () => {
