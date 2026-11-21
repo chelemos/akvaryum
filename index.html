@@ -22,8 +22,8 @@
   canvas { display: block; position: fixed; inset: 0; touch-action: none; }
   .ipucu {
     position: fixed; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%);
-    color: #e8fbff; font-weight: 600; font-size: clamp(15px, 1.6vmin, 30px); white-space: nowrap;
-    background: rgba(0, 30, 50, .5); padding: .6em 1.1em; border-radius: 2em;
+    color: #e8fbff; font-weight: 600; font-size: clamp(15px, 1.6vmin, 30px); width: max-content; max-width: 88vw; box-sizing: border-box; text-align: center;
+    background: rgba(0, 30, 50, .5); padding: .6em 1.1em; border-radius: 1.4em;
     pointer-events: none; transition: opacity 1.5s;
   }
   #yukleniyor { bottom: 50%; }
@@ -38,6 +38,7 @@
     font-size: clamp(18px, 2.4vmin, 38px); line-height: 1; padding: 0; cursor: pointer;
     display: grid; place-items: center;
   }
+  @media (max-width: 440px) { #arac { gap: 4px; } #arac button { width: 36px; height: 36px; font-size: 17px; } }
   #arac button:focus-visible { outline: 3px solid #ffd54a; outline-offset: 2px; }
   #arac button { position: relative; }
   #arac button.kapali { opacity: .75; }
@@ -114,7 +115,7 @@
 </head>
 <body>
 <div class="ipucu" id="yukleniyor">Akvaryum hazırlanıyor…</div>
-<div class="ipucu" id="ipucu" style="opacity:0">Yem atmak için dokun, balıklara dokunup tanı</div>
+<div class="ipucu" id="ipucu" style="opacity:0">Yem atmak için dokun, balıklara dokunup tanı, iki parmakla yakınlaştır</div>
 
 <div id="arac">
   <button id="rehberDugme" title="Balık rehberi (R)" aria-label="Balık rehberi">📖</button>
@@ -123,6 +124,7 @@
   <button id="avDugme" title="Avlanma aç/kapa (A)" aria-label="Avlanma">🦈</button>
   <button id="geceDugme" title="Gece / gündüz (N)" aria-label="Gece modu">🌙</button>
   <button id="sesDugme" title="Ses (M)" aria-label="Ses">🔊</button>
+  <button id="yakinDugme" title="Yakınlaştır (+ / −, iki parmak)" aria-label="Yakınlaştır">🔍</button>
   <button id="tamEkranDugme" title="Tam ekran (F)" aria-label="Tam ekran">
     <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
   </button>
@@ -438,7 +440,68 @@ const katman = {
   parca: new PIXI.Container(),    // yem, kabarcık, parçacık
   ust: new PIXI.Container(),      // kenar karartma, gece, etiketler
 };
-for (const k of Object.values(katman)) app.stage.addChild(k);
+// Kamera: "dünya" katmanları yakınlaştırılır ve kaydırılır; kenar karartma, gece ve etiketler (ust) ekrana sabit kalır.
+const dunya = new PIXI.Container();
+app.stage.addChild(dunya);
+for (const k of [katman.arka, katman.isik, katman.uzak, katman.yakin, katman.parca]) dunya.addChild(k);
+app.stage.addChild(katman.ust);
+const KAM_MAX = 4;
+const KAM_ADIMLAR = [1, 2, 3, 4];
+// z, x, y: şimdiki durum (x, y: dünyanın ekrandaki konumu); hz, hx, hy: yumuşakça varılacak hedef
+const kam = { z: 1, x: 0, y: 0, hz: 1, hx: 0, hy: 0 };
+const dunyaX = sx => (sx - kam.x) / kam.z;   // ekran noktası -> akvaryum (dünya) noktası
+const dunyaY = sy => (sy - kam.y) / kam.z;
+const yakinda = () => kam.hz > 1.05;
+let kamZaman = 0;
+function kamUygula() {
+  kam.x = clamp(kam.x, W - W * kam.z, 0);
+  kam.y = clamp(kam.y, H - H * kam.z, 0);
+  dunya.scale.set(kam.z);
+  dunya.position.set(kam.x, kam.y);
+}
+// Dünyanın (wx, wy) noktası ekranın (ex, ey) noktasında kalacak şekilde z kat yakınlaş
+function kamKur(z, ex, ey, wx, wy, anlik) {
+  z = clamp(z, 1, KAM_MAX);
+  if (z < 1.03) z = 1;
+  kam.hz = z;
+  kam.hx = clamp(ex - wx * z, W - W * z, 0);
+  kam.hy = clamp(ey - wy * z, H - H * z, 0);
+  if (anlik) { kam.z = kam.hz; kam.x = kam.hx; kam.y = kam.hy; kamUygula(); }
+  kamEtki();
+}
+function kamYakin(z, ex = W / 2, ey = H / 2, anlik = false) {
+  kamKur(z, ex, ey, (ex - kam.hx) / kam.hz, (ey - kam.hy) / kam.hz, anlik);
+}
+function kamKaydir(dx, dy, anlik) {
+  kam.hx = clamp(kam.hx + dx, W - W * kam.hz, 0);
+  kam.hy = clamp(kam.hy + dy, H - H * kam.hz, 0);
+  if (anlik) { kam.x = kam.hx; kam.y = kam.hy; kamUygula(); }
+}
+function kamAdim(yon) {   // yon: +1 yaklaş, -1 uzaklaş, 0 düğme (1 → 2 → 3 → 4 → 1)
+  const z = kam.hz;
+  const hedef = yon < 0 ? ([...KAM_ADIMLAR].reverse().find(s => s < z - 0.05) || 1)
+    : (KAM_ADIMLAR.find(s => s > z + 0.05) || (yon > 0 ? KAM_MAX : 1));
+  kamYakin(hedef);
+}
+function kamGuncelle(dt) {
+  if (kam.z === kam.hz && kam.x === kam.hx && kam.y === kam.hy) return;
+  const k = 1 - Math.exp(-dt * 12);
+  kam.z = lerp(kam.z, kam.hz, k); kam.x = lerp(kam.x, kam.hx, k); kam.y = lerp(kam.y, kam.hy, k);
+  if (Math.abs(kam.z - kam.hz) < 0.002 && Math.abs(kam.x - kam.hx) < 0.3 && Math.abs(kam.y - kam.hy) < 0.3) { kam.z = kam.hz; kam.x = kam.hx; kam.y = kam.hy; }
+  kamUygula();
+}
+function kamYenile() {   // ekran boyutu değişince sınırları yeniden uygula
+  kam.hx = clamp(kam.hx, W - W * kam.hz, 0); kam.hy = clamp(kam.hy, H - H * kam.hz, 0);
+  kamUygula();
+}
+function kamEtki() {
+  aracGoster();
+  const d = document.getElementById("yakinDugme");
+  if (d) d.textContent = yakinda() ? `×${Math.round(kam.hz * 10) / 10}` : "🔍";
+  // Yakınlaşınca arka planın büyük sürümünü yükle (keskin görünsün)
+  clearTimeout(kamZaman);
+  if (kam.hz > 1.4) kamZaman = setTimeout(() => arkaBuyut(), 250);
+}
 
 // ---------------------------------------------------------------------
 //  Kodla üretilen dokular (yüklemeye gerek kalmasın)
@@ -554,7 +617,7 @@ const arkaAyar = () => BG_AYAR[aktifArka] || BG_AYAR.derin;
 let gecis = null;   // arka plan geçişi: { sure }
 const arkaYukle = (kod, w) => PIXI.Assets.load(`${ARKA_LISTE.find(a => a.kod === kod).yol}${w}.webp`);
 function arkaGenislik() {
-  const piksel = Math.max(window.innerWidth, window.innerHeight) * (typeof app !== "undefined" ? app.renderer.resolution : DPR);
+  const piksel = Math.max(window.innerWidth, window.innerHeight) * (typeof app !== "undefined" ? app.renderer.resolution : DPR) * Math.max(1, kam.hz);
   return piksel > 2600 ? 3840 : piksel > 1400 ? 1920 : 1280;
 }
 // Ekran büyükse (4K) görünen arka planın büyük sürümünü yükleyip yerine koy
@@ -680,6 +743,7 @@ function yerlestir() {
   isikSprite.texture = yeniRT;
   isikRT.destroy(true);
   isikRT = yeniRT;
+  kamYenile();
 }
 window.addEventListener("resize", () => setTimeout(yerlestir, 50));
 yerlestir();
@@ -1139,8 +1203,10 @@ function yemEkle(x, y, olcek, renk, et) {
   return p;
 }
 function yemAt(x) {
+  // Yakınlaşılmışken yem görünen alanın üstünden düşsün
+  const ust = Math.max(suUst() + H * 0.02, dunyaY(0) + 10 * S);
   for (let i = 0; i < 8; i++) {
-    yemEkle(clamp(x + rnd(-28, 28) * S, 5, W - 5), suUst() + H * 0.02 + rnd(-4, 8), S * rnd(0.55, 0.7), pick([0xffffff, 0xffd9a8, 0xe9a46a]), false);
+    yemEkle(clamp(x + rnd(-28, 28) * S, 5, W - 5), ust + rnd(-4, 8), S * rnd(0.55, 0.7), pick([0xffffff, 0xffd9a8, 0xe9a46a]), false);
   }
   ses.serp();
 }
@@ -1350,12 +1416,9 @@ katman.parca.addChild(parmakHalka);
 
 addEventListener("pointerup", () => konus.isit(), { once: true });
 addEventListener("touchend", () => konus.isit(), { once: true });
-app.view.addEventListener("pointerdown", e => {
-  basili = true;
-  ses.ac();
-  ekranUyanik();
-  aracGoster();
-  const x = e.clientX, y = e.clientY;
+// Dokunma: balığa dokunursan adı çıkar, boş suya dokunursan yem düşer. (sx, sy) ekran noktası; tut: parmak basılıyken balıklar parmağa gelsin
+function dokun(sx, sy, tut) {
+  const x = dunyaX(sx), y = dunyaY(sy);
   // Önde olan (yakın) balık önce
   const sirali = baliklar.slice().sort((a, b) => b.z - a.z);
   let balikVar = false;
@@ -1377,18 +1440,80 @@ app.view.addEventListener("pointerdown", e => {
   }
   if (!balikVar) {
     yemAt(x);
-    yem_tutucu = { x, y };
-  } else {
-    basili = false; // balığa dokunuşta parmak takibi başlamasın
+    if (tut) { basili = true; yem_tutucu = { x, y }; }   // balığa dokunuşta parmak takibi başlamaz
   }
+}
+
+// Yakınlaştırma: iki parmakla büyüt/küçült, yakınken tek parmakla sürükleyip kaydır (fare: tekerlek ve sürükleme).
+// Yakınlaşılmışken dokunma, parmak kalkınca ve kaymadıysa yapılır; yakınlaşılmamışken hemen yapılır.
+const isaretler = new Map();   // parmak/fare no -> { x, y }
+let tikBekle = null;           // beklemedeki dokunma { id, x, y, zamanlayici }
+let kaydiriyor = false, pinch = null;
+app.view.addEventListener("pointerdown", e => {
+  ses.ac();
+  ekranUyanik();
+  aracGoster();
   document.getElementById("ipucu").style.opacity = 0;
+  try { app.view.setPointerCapture(e.pointerId); } catch (err) {}
+  isaretler.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (isaretler.size === 2) {
+    // İkinci parmak: bekleyen dokunma iptal, yakınlaştırma başlar
+    if (tikBekle) { clearTimeout(tikBekle.zamanlayici); tikBekle = null; }
+    basili = false; yem_tutucu = null; kaydiriyor = false;
+    const [a, b] = [...isaretler.values()];
+    const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+    pinch = { d0: Math.max(24, Math.hypot(a.x - b.x, a.y - b.y)), z0: kam.z, wx: dunyaX(cx), wy: dunyaY(cy) };
+    return;
+  }
+  if (isaretler.size > 2) return;
+  const x = e.clientX, y = e.clientY;
+  if (yakinda()) tikBekle = { id: e.pointerId, x, y, zamanlayici: 0 };
+  else if (e.pointerType === "touch") {
+    // Parmak yeni indi: ikinci parmak gelip gelmediğini anlamak için çok kısa bekle (yakınlaştırmada yem düşmesin)
+    const t = { id: e.pointerId, x, y, zamanlayici: 0 };
+    t.zamanlayici = setTimeout(() => { if (tikBekle === t) { tikBekle = null; dokun(t.x, t.y, isaretler.has(t.id)); } }, 70);
+    tikBekle = t;
+  } else dokun(x, y, true);
 });
 app.view.addEventListener("pointermove", e => {
-  if (basili) yem_tutucu = { x: e.clientX, y: e.clientY };
-  else aracGoster();
+  const p = isaretler.get(e.pointerId);
+  if (!p) { aracGoster(); return; }   // fare basılı değil
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  p.x = e.clientX; p.y = e.clientY;
+  if (p.yoksay) return;
+  if (pinch) {
+    if (isaretler.size < 2) return;
+    const [a, b] = [...isaretler.values()];
+    kamKur(pinch.z0 * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d0, (a.x + b.x) / 2, (a.y + b.y) / 2, pinch.wx, pinch.wy, true);
+    return;
+  }
+  if (tikBekle && tikBekle.id === e.pointerId && yakinda()) {
+    if (Math.hypot(p.x - tikBekle.x, p.y - tikBekle.y) < 9) return;
+    tikBekle = null; kaydiriyor = true;   // parmak kaydı: dokunma değil, kaydırma
+  }
+  if (kaydiriyor) { kamKaydir(dx, dy, true); return; }
+  if (basili) yem_tutucu = { x: dunyaX(e.clientX), y: dunyaY(e.clientY) };
 });
-const birak = () => { basili = false; yem_tutucu = null; };
-for (const ev of ["pointerup", "pointercancel", "pointerleave"]) app.view.addEventListener(ev, birak);
+const birak = (e, tikla) => {
+  const p = isaretler.get(e.pointerId);
+  if (!p) return;
+  isaretler.delete(e.pointerId);
+  if (pinch && isaretler.size < 2) { pinch = null; for (const q of isaretler.values()) q.yoksay = true; }   // kalan parmak yakınlaştırmadan sonra dokunma sayılmasın
+  if (tikBekle && tikBekle.id === e.pointerId) {
+    clearTimeout(tikBekle.zamanlayici);
+    const t = tikBekle; tikBekle = null;
+    if (tikla && !p.yoksay) dokun(t.x, t.y, false);
+  }
+  if (!isaretler.size) kaydiriyor = false;
+  basili = false; yem_tutucu = null;
+};
+app.view.addEventListener("pointerup", e => birak(e, true));
+app.view.addEventListener("pointercancel", e => birak(e, false));
+app.view.addEventListener("wheel", e => {
+  e.preventDefault();
+  const f = Math.exp(-e.deltaY * (e.deltaMode === 1 ? 16 : 1) * (e.ctrlKey ? 0.01 : 0.0018));
+  kamYakin(kam.hz * f, e.clientX, e.clientY);
+}, { passive: false });
 document.addEventListener("gesturestart", e => e.preventDefault());
 
 // =====================================================================
@@ -1558,6 +1683,7 @@ function tamEkran() {
   else (de.requestFullscreen || de.webkitRequestFullscreen).call(de);
 }
 tamEkranDugme.onclick = tamEkran;
+document.getElementById("yakinDugme").onclick = () => kamAdim(0);
 
 let uyanik = null;
 async function ekranUyanik() {
@@ -1622,6 +1748,19 @@ document.addEventListener("keydown", e => {
     if (e.key === "PageUp" || e.key === "ChannelUp" || e.keyCode === 427) { rehberKaydir(-0.8); e.preventDefault(); return; }
     return; // OK/Enter odaktaki düğmeye kendiliğinden basar
   }
+  // Yakınlaştırma: + / − , kumandada kanal +/−, Geri tuşu uzaklaştırır; yakınken ok tuşları görüntüyü kaydırır
+  const tusTakimi = e.ctrlKey || e.metaKey || e.altKey;   // Ctrl +/− tarayıcının kendi yakınlaştırması kalsın
+  if (!tusTakimi && (k === "+" || k === "=" || e.key === "PageUp" || e.key === "ChannelUp" || e.keyCode === 427)) { kamAdim(1); e.preventDefault(); return; }
+  if (!tusTakimi && (k === "-" || k === "_" || e.key === "PageDown" || e.key === "ChannelDown" || e.keyCode === 428)) { kamAdim(-1); e.preventDefault(); return; }
+  if (!tusTakimi && k === "z") { kamAdim(0); return; }
+  if (yakinda() && (k === "0" || k === "escape" || k === "backspace" || k === "goback" || GERI_TUSLARI.has(e.keyCode))) { kamYakin(1); e.preventDefault(); return; }
+  if (YONLER[e.key] && yakinda() && !arac.contains(document.activeElement)) {
+    const yon = YONLER[e.key];
+    if (!(yon === "yukari" && kam.hy > -1)) {   // üst kenardayken yukarı ok araç çubuğuna geçer
+      kamKaydir(yon === "sag" ? -W * 0.2 : yon === "sol" ? W * 0.2 : 0, yon === "asagi" ? -H * 0.2 : yon === "yukari" ? H * 0.2 : 0, false);
+      e.preventDefault(); return;
+    }
+  }
   // Akvaryum ekranında ok tuşları sağ üstteki düğmeler arasında gezer; aşağı ok akvaryuma döner
   if (YONLER[e.key]) {
     e.preventDefault();
@@ -1630,7 +1769,7 @@ document.addEventListener("keydown", e => {
     else yonleGit(arac, YONLER[e.key]);
     return;
   }
-  if (k === "enter" || k === " ") { if (document.activeElement && document.activeElement.tagName === "BUTTON") return; yemAt(rnd(0.15, 0.85) * W); e.preventDefault(); }
+  if (k === "enter" || k === " ") { if (document.activeElement && document.activeElement.tagName === "BUTTON") return; yemAt(dunyaX(rnd(0.15, 0.85) * W)); e.preventDefault(); }
   else if (k === "f") tamEkran();
   else if (k === "n") geceDugme.onclick();
   else if (k === "a") avDugme.onclick();
@@ -2057,6 +2196,7 @@ app.ticker.add(() => {
     sp.scale.set(o.tur === "halka" ? rr * 2 / 128 : rr * 2 / 32);
     sp.alpha = (1 - k) * 0.35;
   }
+  kamGuncelle(dt);
   if (titrek > 0) {
     titrek -= dt;
     const g = titrekG * Math.max(0, titrek) / 0.3;
@@ -2092,7 +2232,10 @@ app.ticker.add(() => {
     const e = etiketler[i];
     e.omur -= dt;
     if (e.omur <= 0 || e.b.kap.destroyed) { e.kap.destroy({ children: true }); etiketler.splice(i, 1); continue; }
-    e.kap.position.set(clamp(e.b.x, e.kap.yarim + 4, W - e.kap.yarim - 4), Math.max(24 * S, e.b.y - e.b.h * 0.6 - 14 * S));
+    // Etiketler ekrana sabit katmanda; balığın dünyadaki yerinden ekrandaki yerine çevrilir
+    const ex = e.b.x * kam.z + kam.x, ey = (e.b.y - e.b.h * 0.6) * kam.z + kam.y - 14 * S;
+    e.kap.visible = ex > -e.b.w * kam.z * 0.5 && ex < W + e.b.w * kam.z * 0.5 && ey > -e.b.h * kam.z && ey < H + e.b.h * kam.z;
+    e.kap.position.set(clamp(ex, e.kap.yarim + 4, W - e.kap.yarim - 4), Math.max(24 * S, ey));
     e.kap.alpha = Math.min(1, e.omur * 2) * 0.92;
   }
 
