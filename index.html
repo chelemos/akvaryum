@@ -755,9 +755,35 @@ const dokular = {};          // kod -> Texture
 const yukleniyor = {};       // kod -> Promise
 function dokuYukle(kod) {
   if (!yukleniyor[kod]) {
-    yukleniyor[kod] = PIXI.Assets.load(`img/balik/${kod}.webp${BALIK_S}`).then(t => (dokular[kod] = t)).catch(() => null);
+    // Mipmap: küçük çizilen balıklar kıpır kıpır (aliasing) görünmesin, yakınlaştırınca da keskin kalsın
+    yukleniyor[kod] = PIXI.Assets.load({ src: `img/balik/${kod}.webp${BALIK_S}`, data: { mipmap: PIXI.MIPMAP_MODES.ON } }).then(t => (dokular[kod] = t)).catch(() => null);
   }
   return yukleniyor[kod];
+}
+
+// Derinlik bulanıklığı: uzaktaki balıkların bulanık kopyası (bir kez, tuvalde üretilir; çizim sırasında ek maliyet yok).
+// Küçültüp büyütmek her tarayıcıda çalışır (ctx.filter bazı Safari sürümlerinde yok).
+const uzakDokular = {};
+function uzakDoku(kod) {
+  if (uzakDokular[kod] !== undefined) return uzakDokular[kod];
+  let sonuc = null;
+  try {
+    const t = dokular[kod], kaynak = t.baseTexture.resource.source, w = t.width, h = t.height;
+    let c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    c.getContext("2d").drawImage(kaynak, 0, 0, w, h);
+    for (const f of [2, 4, 8]) {   // üç kademede küçült, sonra büyüt
+      const k = document.createElement("canvas");
+      k.width = Math.max(4, Math.round(w / f)); k.height = Math.max(4, Math.round(h / f));
+      const g = k.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(c, 0, 0, k.width, k.height);
+      c = k;
+    }
+    const buyuk = document.createElement("canvas");
+    buyuk.width = w; buyuk.height = h;
+    const g = buyuk.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(c, 0, 0, w, h);
+    sonuc = PIXI.Texture.from(buyuk);
+  } catch (e) { sonuc = null; }
+  return (uzakDokular[kod] = sonuc);
 }
 
 const baliklar = [];
@@ -786,6 +812,9 @@ class Balik {
     this.kap.addChild(this.ip);
     (this.z < 0.86 ? katman.uzak : katman.yakin).addChild(this.kap);
     this.renk();
+    this.uzak = this.z < 0.86;   // uzak katmandaki balık
+    this.bulanik = false;
+    this.derinlik();
 
     const [a, b] = this.bolge();
     this.y = rnd(a, b);
@@ -825,7 +854,35 @@ class Balik {
     const r = ton[0] + (1 - ton[0]) * 0.7 * k, g = ton[1] + (1 - ton[1]) * 0.7 * k, b = ton[2] + (1 - ton[2]) * 0.7 * k;
     this.ip.tint = (Math.round(r * 255) << 16) | (Math.round(g * 255) << 8) | Math.round(b * 255);
     this.renkTon = this.ip.tint;
+    this.tonRGB = [r, g, b];
+    this.isikK = 0;   // son uygulanan ışık çarpanı (isikla)
     this.kap.alpha = lerp(0.82, 1, k);
+  }
+  // Uzaktaki balık bulanık kopyayı kullanır (derinlik hissi); yakınlaştırınca odak gelir, keskin kopya takılır
+  derinlik() {
+    if (!this.uzak) return;
+    const iste = kam.z < (this.bulanik ? 1.6 : 1.45);
+    if (iste === !!this.bulanik) return;
+    const t = iste ? uzakDoku(this.kod) : this.doku;
+    if (!t) { this.uzak = false; return; }
+    this.ip.texture = t;
+    this.bulanik = iste;
+  }
+  // Su altı ışığı: balık biraz loş durur, ışık hüzmesinden geçince hafifçe parlar (gece hüzme sönük, etki de yok)
+  isikla() {
+    const u = (this.x * kam.z + kam.x) / W, vv = (this.y * kam.z + kam.y) / H;
+    const hz = kostikShader.uniforms.uHuzme;
+    let b = 0;
+    for (let i = 0; i < 6; i++) {
+      const x = u - (hz[i * 4] + hz[i * 4 + 3] * vv), w = hz[i * 4 + 1] || 1;
+      b += hz[i * 4 + 2] * Math.exp(-x * x / (w * w));
+    }
+    b *= Math.pow(Math.max(0, 1 - vv), 1.6);
+    const k = 0.94 + Math.min(0.14, b * 3);
+    if (Math.abs(k - this.isikK) < 0.004) return;
+    this.isikK = k;
+    const [r, g, bl] = this.tonRGB;
+    this.ip.tint = (Math.round(Math.min(1, r * k) * 255) << 16) | (Math.round(Math.min(1, g * k) * 255) << 8) | Math.round(Math.min(1, bl * k) * 255);
   }
   bolge() {
     const ust = suUst() + this.h * 0.5, alt = Math.max(ust + 10, ZEMIN() - this.h * 0.5);
@@ -1002,6 +1059,8 @@ class Balik {
     avSayac = Math.min(avSayac, rnd(6, 12)); // kaçırılan avın yerine kısa süre sonra başkası denensin
   }
   ciz() {
+    this.derinlik();
+    this.isikla();
     const tw = this.doku.width, th = this.doku.height;
     const sol = !this.d.sag; // fotoğrafta baş solda
     const genlik = this.d.dalga * tw;
