@@ -200,7 +200,7 @@
 </div>
 
 <script src="lib/pixi-7.4.2.min.js"></script>
-<script src="img/balik/kaynaklar.js?s=20261121"></script>
+<script src="img/balik/kaynaklar.js?s=20261122"></script>
 <script src="muzik/liste.js?s=20261118"></script>
 <script src="img/arkaplan/liste.js?s=20261121"></script>
 <script>
@@ -308,7 +308,6 @@ Object.assign(AYAR, {
   ev_gokkusagi: { L: 70, hiz: 36, bolge: "orta", grup: [3, 6], dalga: 0.035 },
   ev_gurami_cuce: { L: 56, hiz: 24, bolge: "orta", grup: [2, 4], dalga: 0.03 },
   ev_inci_danyo: { L: 34, hiz: 42, bolge: "orta", grup: [7, 12], dalga: 0.06 },
-  ev_japon_adi: { L: 82, hiz: 28, bolge: "hepsi", grup: [2, 4], dalga: 0.03 },
   ev_kiraz: { L: 44, hiz: 36, bolge: "orta", grup: [4, 7], dalga: 0.05 },
   ev_kirmizigoz: { L: 52, hiz: 38, bolge: "orta", grup: [5, 9], dalga: 0.04 },
   ev_limon: { L: 40, hiz: 42, bolge: "orta", grup: [7, 12], dalga: 0.05 },
@@ -751,11 +750,12 @@ yerlestir();
 // =====================================================================
 //  Balıklar
 // =====================================================================
+const BALIK_S = "?s=20261122";   // balık görselleri değişince artırılır (TV/tablet önbelleği eskiyi göstermesin)
 const dokular = {};          // kod -> Texture
 const yukleniyor = {};       // kod -> Promise
 function dokuYukle(kod) {
   if (!yukleniyor[kod]) {
-    yukleniyor[kod] = PIXI.Assets.load(`img/balik/${kod}.webp`).then(t => (dokular[kod] = t)).catch(() => null);
+    yukleniyor[kod] = PIXI.Assets.load(`img/balik/${kod}.webp${BALIK_S}`).then(t => (dokular[kod] = t)).catch(() => null);
   }
   return yukleniyor[kod];
 }
@@ -1800,7 +1800,7 @@ function rehberAc() {
     const k = document.createElement("button");
     k.className = "kart" + (bilinen ? "" : " gizli");
     k.innerHTML = `<img loading="lazy" alt=""><span></span><i></i>`;
-    k.querySelector("img").src = `img/balik/${kod}.webp`;
+    k.querySelector("img").src = `img/balik/${kod}.webp${BALIK_S}`;
     k.querySelector("span").textContent = bilinen ? adi(kod) : "?";
     k.querySelector("i").textContent = bilinen ? bilimAdi(kod) : "";
     k.onclick = () => {

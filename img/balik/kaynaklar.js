@@ -1169,15 +1169,6 @@ window.KAYNAKLAR = {
   "lisans": "CC BY-SA 3.0",
   "yazar": "H. Zell"
  },
- "ev_japon_adi": {
-  "ad": "Common goldfish",
-  "tr": "Japon balığı",
-  "bilim": "Carassius auratus",
-  "dosya": "Carassius auratus auratus (goldfish) 2.jpg",
-  "sayfa": "https://commons.wikimedia.org/wiki/File:Carassius_auratus_auratus_(goldfish)_2.jpg",
-  "lisans": "CC BY 2.0",
-  "yazar": "James St. John"
- },
  "ev_ryukin": {
   "ad": "Ryukin goldfish",
   "tr": "Japon balığı (Ryukin)",
@@ -1326,10 +1317,10 @@ window.KAYNAKLAR = {
   "ad": "Flame angelfish",
   "tr": "Alev melek balığı",
   "bilim": "Centropyge loricula",
-  "dosya": "Centropyge loricula 1.jpg",
-  "sayfa": "https://commons.wikimedia.org/wiki/File:Centropyge_loricula_1.jpg",
+  "dosya": "Flame Angelfish Centropyge loricula.jpg",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Flame_Angelfish_Centropyge_loricula.jpg",
   "lisans": "CC BY 2.0",
-  "yazar": "Dieter Karner from Loosdorf, Austria"
+  "yazar": "Brian Gratwicke"
  },
  "ev_yesil_kromis": {
   "ad": "Blue-green chromis",
@@ -1416,10 +1407,10 @@ window.KAYNAKLAR = {
   "ad": "Zebra danio",
   "tr": "Zebra balığı",
   "bilim": "Danio rerio",
-  "dosya": "Leopard danio (cropped).jpg",
-  "sayfa": "https://commons.wikimedia.org/wiki/File:Leopard_danio_(cropped).jpg",
-  "lisans": "CC0",
-  "yazar": "Roundish"
+  "dosya": "Danio rerio lab left.JPG",
+  "sayfa": "https://commons.wikimedia.org/wiki/File:Danio_rerio_lab_left.JPG",
+  "lisans": "CC BY-SA 3.0",
+  "yazar": "Pogrebnoj-Alexandroff"
  }
 };
 window.ARKAPLAN_KAYNAK = {"dosya": "Reef aquarium at Burgers' Zoo (a).jpg", "sayfa": "https://commons.wikimedia.org/wiki/File:Reef_aquarium_at_Burgers%27_Zoo_(a).jpg", "lisans": "CC BY-SA 4.0", "yazar": "ErikvanB", "not": "Fotoğraftaki birkaç balık silindi (türetilmiş eser, aynı lisansla)."};
